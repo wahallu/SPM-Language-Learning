@@ -7,41 +7,44 @@ const Hero = () => {
     <section className="bg-white min-h-screen flex items-start relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#FF7D29]/10 via-transparent to-transparent opacity-50"></div>
-      
+
       <div className="max-w-7xl mx-auto px-6 w-full relative z-10 pt-40">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content - Mascot (previously Right Content) */}
           <div className="relative flex justify-center items-center">
-  {/* Main Mascot */}
-  <div className="text-center relative z-10">
-    <Image
-      src="/Gif/reading boy.gif"
-      alt="Reading boy mascot"
-      width={600}
-      height={600}
-      className="animate-float"
-      unoptimized={true}
-    />
-  </div>
-</div>
+            {/* Main Mascot */}
+            <div className="text-center relative z-10">
+              <Image
+                src="/Gif/reading boy.gif"
+                alt="Reading boy mascot"
+                width={600}
+                height={600}
+                className="animate-float"
+                unoptimized={true}
+              />
+            </div>
+          </div>
 
           {/* Right Content - Text (previously Left Content) */}
-          <div className="text-gray-600 space-y-8">
+          <div className="text-gray-600 space-y-10">
             <h1 className="text-2xl lg:text-4xl font-bold leading-tight text-center">
               The free, fun, and effective way to learn a language!
             </h1>
-            
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-<button className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF8A47]">
-                Start Learning 
-              </button>
-              
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
+                <button className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF9D5C]">
+                  GET STARTED
+                </button>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
+                <button className="bg-gray-100 text-[#1B9EDD] px-22 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-gray-300">
+                  I ALREADY HAVE AN ACCOUNT
+                </button>
+              </div>
             </div>
-
             {/* Stats */}
-            
           </div>
         </div>
       </div>
