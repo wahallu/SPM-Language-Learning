@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const Benefit = () => {
   return (
-    <div className="w-screen h-auto px-[15em] py-[1.5em] flex flex-col justify-center items-center bg-gradient-to-b from-[#fffbf9] to-white">
+    <div className="w-screen h-auto px-[15em] py-[1.5em] flex flex-col justify-center items-center bg-white">
       <div className="flex justify-between items-center">
         <div className="w-1/2">
           <div className="text-[#FF7D29] text-5xl">free. fun. effective.</div>

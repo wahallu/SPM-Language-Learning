@@ -6,7 +6,7 @@ const Hero = () => {
   return (
     <section className="bg-white min-h-screen flex items-start relative overflow-hidden">
       {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#FF7D29]/10 via-transparent to-transparent opacity-50"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#FF7D29]/10 via-transparent to-transparent opacity-50"></div>
 
       <div className="max-w-7xl mx-auto px-6 w-full relative z-10 pt-40">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -47,6 +47,49 @@ const Hero = () => {
             {/* Stats */}
           </div>
         </div>
+
+        {/* Language selection line */}
+        <div className="flex justify-center items-center mt-20 gap-4 overflow-x-auto py-4">
+
+          <div className="flex items-center gap-10">
+            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg">
+              <Image
+                src="/flags/us.png"
+                alt="English"
+                width={30}
+                height={24}
+                className="rounded-sm"
+                unoptimized={true}
+              />
+              <span className="text-gray-600 font-medium">ENGLISH</span>
+            </button>
+
+            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg">
+              <Image
+                src="/flags/sri.png"
+                alt="Spanish"
+                width={30}
+                height={24}
+                className="rounded-sm"
+                unoptimized={true}
+              />
+              <span className="text-gray-600 font-medium">SINHALA</span>
+            </button>
+
+            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg">
+              <Image
+                src="/flags/india.png"
+                alt="French"
+                width={30}
+                height={24}
+                className="rounded-sm"
+                unoptimized={true}
+              />
+              <span className="text-gray-600 font-medium">TAMIL</span>
+            </button>
+
+          </div>
+        </div>
       </div>
 
       <style jsx>{`
@@ -84,8 +127,16 @@ const Hero = () => {
         }
 
         .bg-gradient-radial {
-          background: radial-gradient(circle at 20% 80%, rgba(255, 125, 41, 0.1) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 20%, rgba(255, 125, 41, 0.1) 0%, transparent 50%);
+          background: radial-gradient(
+              circle at 20% 80%,
+              rgba(255, 125, 41, 0.1) 0%,
+              transparent 50%
+            ),
+            radial-gradient(
+              circle at 80% 20%,
+              rgba(255, 125, 41, 0.1) 0%,
+              transparent 50%
+            );
         }
       `}</style>
     </section>
