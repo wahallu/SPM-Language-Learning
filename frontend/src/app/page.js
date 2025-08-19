@@ -1,7 +1,7 @@
 import React from 'react'
-import Header from './Components/Header'
+import Header from './Components/layout/Header'
 import Hero from './Home/Hero'
-import Footer from './Components/Footer'
+import Footer from './Components/layout/Footer'
 import Benefit from './Home/BenefitSection'
 
 const Home = () => {
