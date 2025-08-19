@@ -83,7 +83,7 @@ const LoginForm = ({ onForgotPassword }) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-gradient-to-b from-[#FFEEE6] to-white">
       {/* Header */}
       <motion.div
         className="text-center mb-8"

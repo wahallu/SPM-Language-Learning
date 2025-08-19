@@ -4,9 +4,11 @@ import React from "react";
 import Image from "next/image";
 const Hero = () => {
   return (
-    <section className="bg-white min-h-screen flex items-start relative overflow-hidden">
+    <section className="bg-white min-h-screen flex items-center relative overflow-hidden">
       {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#FF7D29]/10 via-transparent to-transparent opacity-50"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent" style={{
+        background: 'linear-gradient(to bottom, #FFEEE6 100px, #FFEEE6 100px, transparent 50%)'
+      }}></div>
 
       <div className="max-w-7xl mx-auto px-6 w-full relative z-10 pt-40">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
