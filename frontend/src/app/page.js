@@ -3,6 +3,7 @@ import Header from './Components/Header'
 import Hero from './Home/Hero'
 import Footer from './Components/Footer'
 import Benefit from './Home/BenefitSection'
+import Getstart from './Home/Getstart'
 
 const Home = () => {
   return (
@@ -10,6 +11,7 @@ const Home = () => {
       <Header />
       <Hero />
       <Benefit />
+      <Getstart />
       {/* <Footer /> */}
     </div>
   )
