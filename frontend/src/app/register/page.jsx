@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import Header from '../components/Header';
+import Header from '../Components/layout/Header';
 import LanguageSelection from '../Components/registration/LanguageSelection';
 import RegistrationForm from '../components/registration/RegistrationForm';
 import ProgressIndicator from '../components/registration/ProgressIndicator';
