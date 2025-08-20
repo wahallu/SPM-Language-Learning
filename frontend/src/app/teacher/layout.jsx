@@ -8,7 +8,7 @@ import TeacherHeader from '../components/teacher/TeacherHeader';
 const TeacherLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50">
-      <TeacherHeader />
+      {/* <TeacherHeader /> */}
       
       <div className="flex">
         <TeacherSidebar />

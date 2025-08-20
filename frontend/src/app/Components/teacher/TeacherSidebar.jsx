@@ -20,7 +20,7 @@ const TeacherSidebar = () => {
       icon: '📚',
       label: 'My Courses',
       href: '/teacher/courses',
-      active: pathname.startsWith('/teacher/courses')
+      active: pathname === '/teacher/courses'
     },
     {
       icon: '➕',
@@ -56,7 +56,7 @@ const TeacherSidebar = () => {
 
   return (
     <motion.div
-      className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white shadow-lg transition-all duration-300 ${
+      className={`fixed left-0 h-[calc(100vh-4rem)] bg-white shadow-lg transition-all duration-300 ${
         isCollapsed ? 'w-16' : 'w-64'
       }`}
       initial={{ x: -100, opacity: 0 }}
