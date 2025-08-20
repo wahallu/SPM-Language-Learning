@@ -1,14 +1,28 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+
 const Hero = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in by looking for auth token in localStorage
+    const authToken = localStorage.getItem("authToken");
+    setIsLoggedIn(!!authToken);
+  }, []);
+
   return (
     <section className="bg-white min-h-screen flex items-center relative overflow-hidden">
       {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent" style={{
-        background: 'linear-gradient(to bottom, #FFEEE6 100px, #FFEEE6 100px, transparent 50%)'
-      }}></div>
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent"
+        style={{
+          background:
+            "linear-gradient(to bottom, #FFEEE6 100px, #FFEEE6 100px, transparent 50%)",
+        }}
+      ></div>
 
       <div className="max-w-7xl mx-auto px-6 w-full relative z-10 pt-40">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -35,16 +49,34 @@ const Hero = () => {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
-                <button className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF9D5C]">
-                  GET STARTED
-                </button>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
-                <button className="bg-gray-100 text-[#1B9EDD] px-22 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-gray-300">
-                  I ALREADY HAVE AN ACCOUNT
-                </button>
-              </div>
+              {isLoggedIn ? (
+                // Show "Continue Learning" button for logged-in users
+                <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
+                  <Link href="/lessons">
+                    <button className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF9D5C]">
+                      CONTINUE LEARNING
+                    </button>
+                  </Link>
+                </div>
+              ) : (
+                // Show "Get Started" and "I Already Have An Account" buttons for visitors
+                <>
+                  <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
+                    <Link href="/register">
+                      <button className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF9D5C]">
+                        GET STARTED
+                      </button>
+                    </Link>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
+                    <Link href="/login">
+                      <button className="bg-gray-100 text-[#1B9EDD] px-22 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-gray-300">
+                        I ALREADY HAVE AN ACCOUNT
+                      </button>
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
             {/* Stats */}
           </div>
@@ -52,7 +84,6 @@ const Hero = () => {
 
         {/* Language selection line */}
         <div className="flex justify-center items-center mt-20 gap-4 overflow-x-auto py-4">
-
           <div className="flex items-center gap-10">
             <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg">
               <Image
@@ -89,7 +120,6 @@ const Hero = () => {
               />
               <span className="text-gray-600 font-medium">TAMIL</span>
             </button>
-
           </div>
         </div>
       </div>

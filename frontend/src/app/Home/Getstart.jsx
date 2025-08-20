@@ -25,12 +25,12 @@ const Getstart = () => {
             </div>
 
             {/* Footer section with character overlay */}
-            <div className="w-full flex justify-center pb-5 relative">
+            <div className="w-full flex justify-center relative -mb-1">
                 {/* Background footer gif */}
                 <img
                     src="/download.svg"
                     alt="Footer animation"
-                    className="w-full h-auto object-cover"
+                    className="w-full h-auto object-cover block"
                 />
                 
                 {/* Character images overlay */}

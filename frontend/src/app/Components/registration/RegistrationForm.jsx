@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import Button from '../ui/Button';
+import { useRouter } from 'next/navigation';
 
 const RegistrationForm = ({ selectedLanguages, onBack }) => {
     const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ const RegistrationForm = ({ selectedLanguages, onBack }) => {
 
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     const goals = [
         { id: 'career', label: 'Career advancement', icon: '💼' },
@@ -100,21 +102,48 @@ const RegistrationForm = ({ selectedLanguages, onBack }) => {
         setIsLoading(true);
 
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Handle successful registration
-            console.log('Registration successful:', {
-                ...formData,
-                selectedLanguages
+            const response = await fetch('http://localhost:8080/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: formData.name, // Using name as username
+                    email: formData.email,
+                    password: formData.password,
+                    languageToLearn: selectedLanguages.learn.code,
+                    languageKnown: selectedLanguages.know.code
+                }),
             });
-
-            // Redirect to success page or dashboard
-            alert('Registration successful! Welcome to ZorsCode Academy!');
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Registration failed');
+            }
+            
+            // Store auth token in localStorage or cookies
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('userId', data.userId);
+            localStorage.setItem('username', data.username);
+            
+            // Store additional user preferences if needed
+            localStorage.setItem('learningLanguage', selectedLanguages.learn.code);
+            localStorage.setItem('knownLanguage', selectedLanguages.know.code);
+            
+            // Redirect to student dashboard
+            router.push('/lessons');
 
         } catch (error) {
             console.error('Registration failed:', error);
-            alert('Registration failed. Please try again.');
+            // Set appropriate error message
+            if (error.message.includes('Email already registered')) {
+                setErrors(prev => ({ ...prev, email: 'This email is already registered' }));
+            } else if (error.message.includes('Username already taken')) {
+                setErrors(prev => ({ ...prev, name: 'This username is already taken' }));
+            } else {
+                alert('Registration failed. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }
