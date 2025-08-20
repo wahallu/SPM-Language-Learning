@@ -140,7 +140,7 @@ const CreateLessonModal = ({ onClose, onSubmit, lessonCount }) => {
       onClick={onClose}
     >
       <motion.div
-        className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+        className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
@@ -403,7 +403,7 @@ const CreateLessonModal = ({ onClose, onSubmit, lessonCount }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-200">
+        <div className="flex-shrink-0 flex items-center justify-between p-6 border-t border-gray-200 bg-white">
           <button
             onClick={currentStep === 1 ? onClose : prevStep}
             className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
