@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,6 +8,13 @@ import Image from 'next/image';
 const SupervisorHeader = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [supervisorData, setSupervisorData] = useState(null);
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    department: ''
+  });
 
   const notifications = [
     {
@@ -34,6 +41,81 @@ const SupervisorHeader = () => {
   ];
 
   const unreadCount = notifications.filter(n => n.unread).length;
+
+  useEffect(() => {
+    fetchSupervisorData();
+  }, []);
+
+  const fetchSupervisorData = async () => {
+    try {
+      const storedSupervisorData = JSON.parse(localStorage.getItem('supervisorData') || '{}');
+      const token = localStorage.getItem('supervisorToken');
+      
+      if (!storedSupervisorData.id || !token) {
+        console.log('No supervisor data or token found');
+        return;
+      }
+
+      setSupervisorData(storedSupervisorData);
+
+      // Fetch detailed profile data from API
+      const response = await fetch(`http://localhost:8080/api/supervisor/profile/${storedSupervisorData.id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data) {
+          const supervisor = result.data;
+          setProfileData({
+            firstName: supervisor.firstName || '',
+            lastName: supervisor.lastName || '',
+            email: supervisor.email || '',
+            department: supervisor.department || 'Supervisor'
+          });
+        }
+      } else {
+        // Fallback to stored data if API call fails
+        setProfileData({
+          firstName: storedSupervisorData.firstName || '',
+          lastName: storedSupervisorData.lastName || '',
+          email: storedSupervisorData.email || '',
+          department: storedSupervisorData.department || 'Supervisor'
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching supervisor data:', error);
+      // Fallback to stored data if API call fails
+      const storedSupervisorData = JSON.parse(localStorage.getItem('supervisorData') || '{}');
+      setProfileData({
+        firstName: storedSupervisorData.firstName || '',
+        lastName: storedSupervisorData.lastName || '',
+        email: storedSupervisorData.email || '',
+        department: storedSupervisorData.department || 'Supervisor'
+      });
+    }
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('supervisorToken');
+    localStorage.removeItem('supervisorData');
+    window.location.href = '/Supervisor/login';
+  };
+
+  const getInitials = () => {
+    const firstName = profileData.firstName;
+    const lastName = profileData.lastName;
+    if (firstName && lastName) {
+      return firstName.charAt(0).toUpperCase() + lastName.charAt(0).toUpperCase();
+    } else if (firstName) {
+      return firstName.charAt(0).toUpperCase() + firstName.charAt(1)?.toUpperCase() || '';
+    }
+    return 'SV';
+  };
 
   return (
     <motion.header
@@ -147,7 +229,7 @@ const SupervisorHeader = () => {
               whileTap={{ scale: 0.95 }}
             >
               <div className="w-8 h-8 bg-[#FF7D29] rounded-full flex items-center justify-center text-white font-bold text-sm">
-                SV
+                {getInitials()}
               </div>
               <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -163,8 +245,18 @@ const SupervisorHeader = () => {
                   exit={{ opacity: 0, y: -10 }}
                 >
                   <div className="p-4 border-b border-gray-200">
-                    <p className="font-semibold text-gray-800">Supervisor</p>
-                    <p className="text-sm text-gray-600">admin@zorscode.com</p>
+                    <p className="font-semibold text-gray-800">
+                      {profileData.firstName && profileData.lastName 
+                        ? `${profileData.firstName} ${profileData.lastName}`
+                        : 'Supervisor'
+                      }
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {profileData.email || 'admin@zorscode.com'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {profileData.department}
+                    </p>
                   </div>
                   <div className="py-2">
                     <Link href="/Supervisor/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -178,7 +270,10 @@ const SupervisorHeader = () => {
                     </Link>
                   </div>
                   <div className="border-t border-gray-200 py-2">
-                    <button className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                    <button 
+                      onClick={handleSignOut}
+                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
                       Sign Out
                     </button>
                   </div>
