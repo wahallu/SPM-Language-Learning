@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import React, { useState } from "react";
+import { motion } from "motion/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const TeacherSidebar = () => {
   const pathname = usePathname();
@@ -11,53 +11,47 @@ const TeacherSidebar = () => {
 
   const menuItems = [
     {
-      icon: '🏠',
-      label: 'Dashboard',
-      href: '/teacher',
-      active: pathname === '/teacher'
+      icon: "🏠",
+      label: "Dashboard",
+      href: "/teacher",
+      active: pathname === "/teacher",
     },
     {
-      icon: '📚',
-      label: 'My Courses',
-      href: '/teacher/courses',
-      active: pathname === '/teacher/courses'
+      icon: "📚",
+      label: "My Courses",
+      href: "/teacher/courses",
+      active: pathname === "/teacher/courses",
     },
     {
-      icon: '➕',
-      label: 'Create Course',
-      href: '/teacher/courses/create',
-      active: pathname === '/teacher/courses/create'
+      icon: "➕",
+      label: "Create Course",
+      href: "/teacher/courses/create",
+      active: pathname === "/teacher/courses/create",
     },
     {
-      icon: '👥',
-      label: 'Students',
-      href: '/teacher/students',
-      active: pathname === '/teacher/students'
+      icon: "👥",
+      label: "Students",
+      href: "/teacher/students",
+      active: pathname === "/teacher/students",
     },
     {
-      icon: '📊',
-      label: 'Analytics',
-      href: '/teacher/analytics',
-      active: pathname === '/teacher/analytics'
+      icon: "📊",
+      label: "Analytics",
+      href: "/teacher/analytics",
+      active: pathname === "/teacher/analytics",
     },
     {
-      icon: '💬',
-      label: 'Messages',
-      href: '/teacher/messages',
-      active: pathname === '/teacher/messages'
+      icon: "⚙️",
+      label: "Settings",
+      href: "/teacher/settings",
+      active: pathname === "/teacher/settings",
     },
-    {
-      icon: '⚙️',
-      label: 'Settings',
-      href: '/teacher/settings',
-      active: pathname === '/teacher/settings'
-    }
   ];
 
   return (
     <motion.div
       className={`fixed left-0 h-[calc(100vh-4rem)] bg-white shadow-lg transition-all duration-300 ${
-        isCollapsed ? 'w-16' : 'w-64'
+        isCollapsed ? "w-16" : "w-64"
       }`}
       initial={{ x: -100, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
@@ -104,8 +98,8 @@ const TeacherSidebar = () => {
               <motion.div
                 className={`flex items-center space-x-3 p-3 rounded-xl transition-all ${
                   item.active
-                    ? 'bg-[#FF7D29] text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? "bg-[#FF7D29] text-white shadow-lg"
+                    : "text-gray-600 hover:bg-gray-100"
                 }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
