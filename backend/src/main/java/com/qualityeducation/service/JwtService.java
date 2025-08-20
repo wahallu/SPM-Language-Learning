@@ -1,6 +1,7 @@
 package com.qualityeducation.service;
 
 import com.qualityeducation.model.User;
+import com.qualityeducation.model.Supervisor;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -53,11 +54,49 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
+    // Original method for User (keep this unchanged)
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
         claims.put("username", user.getUsername());
+        claims.put("userType", "student"); // Add user type for differentiation
         return createToken(claims, user.getEmail());
+    }
+
+    // New overloaded method for Supervisor
+    public String generateToken(Supervisor supervisor) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("firstName", supervisor.getFirstName());
+        claims.put("lastName", supervisor.getLastName());
+        claims.put("userType", "supervisor");
+        claims.put("supervisorId", supervisor.getId());
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(supervisor.getEmail()) // This should be the email
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    // Alternative method using email string (for backward compatibility)
+    public String generateTokenForSupervisor(String email, String supervisorId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("supervisorId", supervisorId);
+        claims.put("userType", "supervisor");
+        return createToken(claims, email);
+    }
+
+    // New method to generate token with email and role
+    public String generateToken(String email, String role) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", role) // Make sure role is included
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
@@ -72,6 +111,18 @@ public class JwtService {
 
     public Boolean validateToken(String token, String userEmail) {
         final String username = extractUsername(token);
-        return (username.equals(userEmail) && !isTokenExpired(token));
+        return (username.equals(userEmail)) && !isTokenExpired(token);
+    }
+
+    // New method to extract supervisor ID from token
+    public String extractSupervisorId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("supervisorId", String.class);
+    }
+
+    // New method to extract user type from token
+    public String extractUserType(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("userType", String.class);
     }
 }

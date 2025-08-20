@@ -1,10 +1,11 @@
 package com.qualityeducation.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class SupervisorLoginResponse {
-    private SupervisorResponse supervisor;
     private String token;
-    private long expiresIn; // seconds
+    private SupervisorResponse supervisor;
 }

@@ -62,6 +62,7 @@ const SupervisorRegister = () => {
   const validateForm = () => {
     const newErrors = {};
 
+    // Match backend @NotBlank validations
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
@@ -92,10 +93,12 @@ const SupervisorRegister = () => {
       newErrors.experience = 'Experience details are required';
     }
 
+    // Backend expects @NotEmpty for specialization
     if (formData.specialization.length === 0) {
       newErrors.specialization = 'Please select at least one specialization';
     }
 
+    // Backend expects @Size(min = 8) for password
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
@@ -124,38 +127,43 @@ const SupervisorRegister = () => {
     setIsLoading(true);
 
     try {
+      // Prepare data to match backend SupervisorRegistrationRequest structure
+      const requestData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        institution: formData.institution,
+        department: formData.department || "",
+        qualifications: formData.qualifications,
+        experience: formData.experience,
+        specialization: formData.specialization,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+      };
+
+      console.log('Sending registration data:', requestData);
+
       const response = await fetch('http://localhost:8080/api/supervisor/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          agreeToTerms: formData.agreeToTerms
-        }),
+        body: JSON.stringify(requestData),
       });
 
       const result = await response.json();
-
-      if (result.success) {
-        alert(result.message);
-        // Reset form or redirect
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          institution: '',
-          department: '',
-          qualifications: '',
-          experience: '',
-          specialization: [],
-          password: '',
-          confirmPassword: '',
-          agreeToTerms: false
-        });
+      
+      if (response.ok && result.success) {
+        // Show success message and redirect to login
+        alert('Registration successful! You can now log in to your supervisor dashboard.');
+        
+        // Redirect to login page after successful registration
+        window.location.href = '/Supervisor/login';
+        
       } else {
-        setErrors({ submit: result.message || result.error });
+        console.error('Registration error:', result);
+        setErrors({ submit: result.message || result.error || 'Registration failed' });
       }
 
     } catch (error) {

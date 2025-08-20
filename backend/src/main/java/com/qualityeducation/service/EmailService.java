@@ -82,4 +82,24 @@ public class EmailService {
         
         mailSender.send(message);
     }
+    
+    public void sendSupervisorWelcomeEmail(String toEmail, String firstName) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Welcome to Quality Education Platform - Supervisor Access Granted");
+        message.setText("Dear " + firstName + ",\n\n" +
+                        "Welcome to the Quality Education Platform! Your supervisor account has been successfully created.\n\n" +
+                        "You can now access the supervisor dashboard at: http://localhost:3000/Supervisor/login\n\n" +
+                        "Use your registered email and password to log in and start managing lesson approvals and quality control.\n\n" +
+                        "Key features available to you:\n" +
+                        "- Review and approve teacher-submitted lessons\n" +
+                        "- Monitor content quality and standards\n" +
+                        "- Manage teacher accounts and permissions\n" +
+                        "- Generate performance reports\n\n" +
+                        "If you have any questions, please don't hesitate to contact our support team.\n\n" +
+                        "Best regards,\n" +
+                        "Quality Education Team");
+        
+        mailSender.send(message);
+    }
 }

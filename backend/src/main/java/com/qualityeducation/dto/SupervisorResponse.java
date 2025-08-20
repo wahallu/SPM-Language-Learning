@@ -1,12 +1,14 @@
 package com.qualityeducation.dto;
 
 import com.qualityeducation.model.Supervisor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
+@Builder
 public class SupervisorResponse {
     private String id;
     private String firstName;
@@ -23,26 +25,28 @@ public class SupervisorResponse {
     private String employeeId;
     private Supervisor.SupervisorRole role;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;
     
     public static SupervisorResponse fromSupervisor(Supervisor supervisor) {
-        SupervisorResponse response = new SupervisorResponse();
-        response.setId(supervisor.getId());
-        response.setFirstName(supervisor.getFirstName());
-        response.setLastName(supervisor.getLastName());
-        response.setEmail(supervisor.getEmail());
-        response.setPhone(supervisor.getPhone());
-        response.setInstitution(supervisor.getInstitution());
-        response.setDepartment(supervisor.getDepartment());
-        response.setQualifications(supervisor.getQualifications());
-        response.setExperience(supervisor.getExperience());
-        response.setSpecialization(supervisor.getSpecialization());
-        response.setStatus(supervisor.getStatus());
-        response.setActive(supervisor.isActive());
-        response.setEmployeeId(supervisor.getEmployeeId());
-        response.setRole(supervisor.getRole());
-        response.setCreatedAt(supervisor.getCreatedAt());
-        response.setLastLoginAt(supervisor.getLastLoginAt());
-        return response;
+        return SupervisorResponse.builder()
+                .id(supervisor.getId())
+                .firstName(supervisor.getFirstName())
+                .lastName(supervisor.getLastName())
+                .email(supervisor.getEmail())
+                .phone(supervisor.getPhone())
+                .institution(supervisor.getInstitution())
+                .department(supervisor.getDepartment())
+                .qualifications(supervisor.getQualifications())
+                .experience(supervisor.getExperience())
+                .specialization(supervisor.getSpecialization())
+                .status(supervisor.getStatus())
+                .isActive(supervisor.isActive())
+                .employeeId(supervisor.getEmployeeId())
+                .role(supervisor.getRole())
+                .createdAt(supervisor.getCreatedAt())
+                .updatedAt(supervisor.getUpdatedAt())
+                .lastLoginAt(supervisor.getLastLoginAt())
+                .build();
     }
 }
