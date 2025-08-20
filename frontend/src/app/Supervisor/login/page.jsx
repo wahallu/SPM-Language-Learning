@@ -60,18 +60,30 @@ const SupervisorLogin = () => {
     setIsLoading(true);
     
     try {
-      // Simulate API call for supervisor authentication
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Handle successful login
-      console.log('Supervisor login successful:', formData);
-      
-      // Redirect to supervisor dashboard
-      alert('Login successful! Welcome to Supervisor Dashboard!');
+      const response = await fetch('http://localhost:8080/api/supervisor/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Store token in localStorage or secure storage
+        localStorage.setItem('supervisorToken', result.data.token);
+        localStorage.setItem('supervisorData', JSON.stringify(result.data.supervisor));
+        
+        // Redirect to dashboard
+        window.location.href = '/Supervisor/dashboard';
+      } else {
+        setErrors({ submit: result.message || result.error });
+      }
       
     } catch (error) {
       console.error('Login failed:', error);
-      setErrors({ submit: 'Invalid credentials. Please try again.' });
+      setErrors({ submit: 'Login failed. Please try again.' });
     } finally {
       setIsLoading(false);
     }

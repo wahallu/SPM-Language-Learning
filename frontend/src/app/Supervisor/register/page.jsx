@@ -124,14 +124,39 @@ const SupervisorRegister = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call for supervisor registration
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch('http://localhost:8080/api/supervisor/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          agreeToTerms: formData.agreeToTerms
+        }),
+      });
 
-      // Handle successful registration
-      console.log('Supervisor registration submitted:', formData);
+      const result = await response.json();
 
-      // Show success message
-      alert('Registration request submitted successfully! You will receive an email confirmation once your application is reviewed and approved.');
+      if (result.success) {
+        alert(result.message);
+        // Reset form or redirect
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          institution: '',
+          department: '',
+          qualifications: '',
+          experience: '',
+          specialization: [],
+          password: '',
+          confirmPassword: '',
+          agreeToTerms: false
+        });
+      } else {
+        setErrors({ submit: result.message || result.error });
+      }
 
     } catch (error) {
       console.error('Registration failed:', error);
