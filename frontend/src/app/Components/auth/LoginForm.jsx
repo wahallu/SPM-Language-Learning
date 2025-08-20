@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Button from '../ui/Button';
+import { useRouter } from 'next/navigation';
 
 const LoginForm = ({ onForgotPassword }) => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ const LoginForm = ({ onForgotPassword }) => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -60,18 +62,34 @@ const LoginForm = ({ onForgotPassword }) => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
       
-      // Handle successful login
-      console.log('Login successful:', formData);
+      const data = await response.json();
       
-      // Redirect to dashboard
-      alert('Login successful! Welcome back!');
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+      
+      // Store auth token in localStorage or cookies
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('userId', data.userId);
+      localStorage.setItem('username', data.username);
+      
+      // Redirect based on user role (you might need to implement role-based logic)
+      router.push('/lessons');
       
     } catch (error) {
       console.error('Login failed:', error);
-      setErrors({ submit: 'Invalid email or password. Please try again.' });
+      setErrors({ submit: error.message || 'Invalid email or password. Please try again.' });
     } finally {
       setIsLoading(false);
     }
