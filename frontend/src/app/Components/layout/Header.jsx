@@ -76,7 +76,7 @@ const Header = () => {
                   </motion.button>
 
                   {showProfile && (
-                    <div className="absolute right-0 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-lg">
+                    <div className="absolute right-0 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-[100]">
                       <div className="p-4 border-b border-gray-200">
                         <p className="font-semibold text-gray-800">
                           {username}
@@ -168,6 +168,38 @@ const Header = () => {
                       {username.charAt(0).toUpperCase()}
                     </div>
                   </motion.button>
+
+                  {showProfile && (
+                    <div className="absolute right-0 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-[100]">
+                      <div className="p-4 border-b border-gray-200">
+                        <p className="font-semibold text-gray-800">
+                          {username}
+                        </p>
+                      </div>
+                      <div className="py-2">
+                        <Link
+                          href="/student"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Dashboard
+                        </Link>
+                        <Link
+                          href="/student/settings"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Settings
+                        </Link>
+                      </div>
+                      <div className="border-t border-gray-200 py-2">
+                        <button
+                          onClick={handleLogout}
+                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
