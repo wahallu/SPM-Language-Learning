@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import ApiService from '../../../utils/api';
 
 const CreateCoursePage = () => {
   const router = useRouter();
@@ -26,7 +26,7 @@ const CreateCoursePage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const categories = [
-    'English', 'Spanish', 'French', 'German', 'Italian', 
+    'English', 'Spanish', 'French', 'German', 'Italian',
     'Portuguese', 'Chinese', 'Japanese', 'Korean', 'Arabic'
   ];
 
@@ -107,24 +107,30 @@ const CreateCoursePage = () => {
 
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const newCourse = {
+      // Prepare course data for API
+      const coursePayload = {
         ...courseData,
-        id: Date.now(),
-        status: 'draft',
-        students: 0,
-        modules: 0,
-        createdAt: new Date().toISOString().split('T')[0]
+        price: courseData.price ? parseFloat(courseData.price) : 0,
+        learningObjectives: courseData.learningObjectives.filter(obj => obj.trim()),
+        prerequisites: courseData.prerequisites || []
       };
-      
-      console.log('Course created:', newCourse);
-      router.push(`/teacher/courses/${newCourse.id}`);
-      
+
+      // Call API to create course
+      const response = await ApiService.createCourse(coursePayload);
+
+      if (response.success) {
+        // Show success message
+        alert('Course created successfully!');
+
+        // Redirect to course detail page
+        router.push(`/teacher/courses/${response.data.id}`);
+      } else {
+        throw new Error(response.message || 'Failed to create course');
+      }
+
     } catch (error) {
       console.error('Failed to create course:', error);
-      alert('Failed to create course. Please try again.');
+      alert(error.message || 'Failed to create course. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -155,21 +161,19 @@ const CreateCoursePage = () => {
             <div key={step.number} className="flex items-center">
               <div className="relative">
                 <motion.div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${
-                    step.number <= currentStep
+                  className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${step.number <= currentStep
                       ? 'bg-[#FF7D29] text-white'
                       : 'bg-gray-200 text-gray-500'
-                  }`}
-                  animate={{ 
+                    }`}
+                  animate={{
                     scale: step.number === currentStep ? 1.1 : 1,
                   }}
                 >
                   {step.number < currentStep ? '✓' : step.number}
                 </motion.div>
                 <div className="absolute top-14 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                  <span className={`text-sm font-medium ${
-                    step.number <= currentStep ? 'text-[#FF7D29]' : 'text-gray-500'
-                  }`}>
+                  <span className={`text-sm font-medium ${step.number <= currentStep ? 'text-[#FF7D29]' : 'text-gray-500'
+                    }`}>
                     {step.title}
                   </span>
                 </div>
@@ -179,7 +183,7 @@ const CreateCoursePage = () => {
                   <motion.div
                     className="absolute top-0 left-0 h-1 bg-[#FF7D29]"
                     initial={{ width: 0 }}
-                    animate={{ 
+                    animate={{
                       width: step.number < currentStep ? '100%' : '0%'
                     }}
                     transition={{ duration: 0.5 }}
@@ -216,9 +220,8 @@ const CreateCoursePage = () => {
                 name="title"
                 value={courseData.title}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
-                  errors.title ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${errors.title ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 placeholder="e.g., Beginner Spanish Conversation"
               />
               {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
@@ -233,9 +236,8 @@ const CreateCoursePage = () => {
                   name="category"
                   value={courseData.category}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
-                    errors.category ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${errors.category ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select a category</option>
                   {categories.map(cat => (
@@ -253,9 +255,8 @@ const CreateCoursePage = () => {
                   name="level"
                   value={courseData.level}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
-                    errors.level ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${errors.level ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select a level</option>
                   {levels.map(level => (
@@ -275,9 +276,8 @@ const CreateCoursePage = () => {
                 value={courseData.description}
                 onChange={handleInputChange}
                 rows={4}
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
-                  errors.description ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${errors.description ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 placeholder="Describe what students will learn in this course..."
               />
               {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
@@ -318,9 +318,8 @@ const CreateCoursePage = () => {
                   name="estimatedDuration"
                   value={courseData.estimatedDuration}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
-                    errors.estimatedDuration ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${errors.estimatedDuration ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   placeholder="e.g., 8 weeks, 20 hours"
                 />
                 {errors.estimatedDuration && <p className="text-red-500 text-sm mt-1">{errors.estimatedDuration}</p>}

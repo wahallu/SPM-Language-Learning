@@ -1,30 +1,76 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 class ApiService {
   static getAuthHeaders() {
-    const token = localStorage.getItem('supervisorToken');
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      return {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      };
+    }
     return {
       'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
     };
   }
 
   static async handleResponse(response) {
-    if (response.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('supervisorToken');
-      localStorage.removeItem('supervisorData');
-      window.location.href = '/Supervisor/login';
-      throw new Error('Authentication failed');
-    }
-
-    const data = await response.json();
-    
     if (!response.ok) {
-      throw new Error(data.message || 'Request failed');
+      const error = await response.text();
+      throw new Error(error || 'Something went wrong');
     }
+    return response.json();
+  }
 
-    return data;
+  // Course APIs
+  static async createCourse(courseData) {
+    const response = await fetch(`${API_BASE_URL}/courses/create`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(courseData),
+    });
+    return this.handleResponse(response);
+  }
+
+  static async getCoursesByTeacher(teacherId) {
+    const response = await fetch(`${API_BASE_URL}/courses/teacher/${teacherId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  static async getCourseById(courseId) {
+    const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  static async getAllCourses() {
+    const response = await fetch(`${API_BASE_URL}/courses`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  static async updateCourse(courseId, courseData) {
+    const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(courseData),
+    });
+    return this.handleResponse(response);
+  }
+
+  static async deleteCourse(courseId) {
+    const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
   }
 
   // Supervisor Profile APIs
