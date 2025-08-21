@@ -2,6 +2,8 @@ package com.qualityeducation.service;
 
 import com.qualityeducation.model.User;
 import com.qualityeducation.model.Supervisor;
+import com.qualityeducation.model.Teacher;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -63,7 +65,7 @@ public class JwtService {
         return createToken(claims, user.getEmail());
     }
 
-    // New overloaded method for Supervisor
+    // Method for Supervisor
     public String generateToken(Supervisor supervisor) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("firstName", supervisor.getFirstName());
@@ -80,6 +82,23 @@ public class JwtService {
                 .compact();
     }
 
+    // New method for Teacher
+    public String generateToken(Teacher teacher) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("firstName", teacher.getFirstName());
+        claims.put("lastName", teacher.getLastName());
+        claims.put("userType", "teacher");
+        claims.put("teacherId", teacher.getId());
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(teacher.getEmail()) // This should be the email
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     // Alternative method using email string (for backward compatibility)
     public String generateTokenForSupervisor(String email, String supervisorId) {
         Map<String, Object> claims = new HashMap<>();
@@ -88,7 +107,7 @@ public class JwtService {
         return createToken(claims, email);
     }
 
-    // New method to generate token with email and role
+    // Method to generate token with email and role
     public String generateToken(String email, String role) {
         return Jwts.builder()
                 .setSubject(email)
@@ -114,13 +133,19 @@ public class JwtService {
         return (username.equals(userEmail)) && !isTokenExpired(token);
     }
 
-    // New method to extract supervisor ID from token
+    // Method to extract supervisor ID from token
     public String extractSupervisorId(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("supervisorId", String.class);
     }
 
-    // New method to extract user type from token
+    // New method to extract teacher ID from token
+    public String extractTeacherId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("teacherId", String.class);
+    }
+
+    // Method to extract user type from token
     public String extractUserType(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("userType", String.class);
