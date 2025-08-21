@@ -1,4 +1,5 @@
 import React from 'react'
+import { LanguageProvider } from './contexts/LanguageContext'
 import Header from './Components/layout/Header'
 import Hero from './Home/Hero'
 import Footer from './Components/layout/Footer'
@@ -7,13 +8,15 @@ import Getstart from './Home/Getstart'
 
 const Home = () => {
   return (
-    <div>
-      <Header />
-      <Hero />
-      <Benefit />
-      <Getstart />
-      <Footer />
-    </div>
+    <LanguageProvider>
+      <div>
+        <Header />
+        <Hero />
+        <Benefit />
+        <Getstart />
+        <Footer />
+      </div>
+    </LanguageProvider>
   )
 }
 

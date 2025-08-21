@@ -3,9 +3,13 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "motion/react";
+import { useLanguage } from "../contexts/LanguageContext";
+import { t } from "../utils/translations";
 
 const Hero = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { language } = useLanguage();
 
   useEffect(() => {
     // Check if user is logged in by looking for auth token in localStorage
@@ -26,7 +30,7 @@ const Hero = () => {
 
       <div className="max-w-7xl mx-auto px-6 w-full relative z-10 pt-40">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left Content - Mascot (previously Right Content) */}
+          {/* Left Content - Mascot */}
           <div className="relative flex justify-center items-center">
             {/* Main Mascot */}
             <div className="text-center relative z-10">
@@ -41,11 +45,19 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Right Content - Text (previously Left Content) */}
+          {/* Right Content - Text */}
           <div className="text-gray-600 space-y-10">
-            <h1 className="text-2xl lg:text-4xl font-bold leading-tight text-center">
-              The free, fun, and effective way to learn a language!
-            </h1>
+            <motion.h1
+              key={language}
+              className={`text-2xl lg:text-4xl font-bold leading-tight text-center ${
+                language === "si" ? "font-noto-sans-sinhala" : ""
+              }`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              {t("heroTitle", language)}
+            </motion.h1>
 
             {/* Action Buttons */}
             <div className="space-y-3">
@@ -53,9 +65,17 @@ const Hero = () => {
                 // Show "Continue Learning" button for logged-in users
                 <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
                   <Link href="/lessons">
-                    <button className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF9D5C]">
-                      CONTINUE LEARNING
-                    </button>
+                    <motion.button
+                      key={`continue-${language}`}
+                      className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF9D5C]"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {t("continueeLearning", language)}
+                    </motion.button>
                   </Link>
                 </div>
               ) : (
@@ -63,29 +83,50 @@ const Hero = () => {
                 <>
                   <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
                     <Link href="/register">
-                      <button className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF9D5C]">
-                        GET STARTED
-                      </button>
+                      <motion.button
+                        key={`getstarted-${language}`}
+                        className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF9D5C] w-120"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {t("getStarted", language)}
+                      </motion.button>
                     </Link>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
                     <Link href="/login">
-                      <button className="bg-gray-100 text-[#1B9EDD] px-22 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-gray-300">
-                        I ALREADY HAVE AN ACCOUNT
-                      </button>
+                      <motion.button
+                        key={`account-${language}`}
+                        className="bg-gray-100 text-[#1B9EDD] px-22 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-gray-300 w-120"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: 0.1 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {t("alreadyHaveAccount", language)}
+                      </motion.button>
                     </Link>
                   </div>
                 </>
               )}
             </div>
-            {/* Stats */}
           </div>
         </div>
 
         {/* Language selection line */}
-        <div className="flex justify-center items-center mt-20 gap-4 overflow-x-auto py-4">
+        <motion.div
+          key={`lang-selector-${language}`}
+          className="flex justify-center items-center mt-20 gap-4 overflow-x-auto py-4"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
           <div className="flex items-center gap-10">
-            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg">
+            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Image
                 src="/flags/us.png"
                 alt="English"
@@ -94,37 +135,49 @@ const Hero = () => {
                 className="rounded-sm"
                 unoptimized={true}
               />
-              <span className="text-gray-600 font-medium">ENGLISH</span>
+              <span className="text-gray-600 font-medium">
+                {t("english", language)}
+              </span>
             </button>
 
-            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg">
+            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Image
                 src="/flags/sri.png"
-                alt="Spanish"
+                alt="Sinhala"
                 width={30}
                 height={24}
                 className="rounded-sm"
                 unoptimized={true}
               />
-              <span className="text-gray-600 font-medium">SINHALA</span>
+              <span className="text-gray-600 font-medium">
+                {t("sinhala", language)}
+              </span>
             </button>
 
-            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg">
+            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Image
                 src="/flags/india.png"
-                alt="French"
+                alt="Tamil"
                 width={30}
                 height={24}
                 className="rounded-sm"
                 unoptimized={true}
               />
-              <span className="text-gray-600 font-medium">TAMIL</span>
+              <span className="text-gray-600 font-medium">
+                {t("tamil", language)}
+              </span>
             </button>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <style jsx>{`
+        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700&display=swap");
+
+        .font-noto-sans-sinhala {
+          font-family: "Noto Sans Sinhala", sans-serif;
+        }
+
         .text-shadow-lg {
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }

@@ -1,23 +1,55 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
+import { motion } from "motion/react";
+import { useLanguage } from "../contexts/LanguageContext";
+import { t } from "../utils/translations";
 
 const Benefit = () => {
+  const { language } = useLanguage();
+
   return (
     <div className="w-screen h-auto px-[15em] py-[1.5em] flex flex-col justify-center items-center bg-white">
-      <div className="flex justify-between items-center">
+      <motion.div
+        className="flex justify-between items-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="w-1/2">
-          <div className="text-[#FF7D29] text-5xl">free. fun. effective.</div>
-          <div
-            className="text-gray-700 text-lg my-4 font-normal w-4/5"
-            style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
+          <motion.div
+            key={`title1-${language}`}
+            className={`text-[#FF7D29] text-5xl ${
+              language === "si" ? "font-noto-sans-sinhala" : ""
+            }`}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            Learning with Duolingo is fun, and{" "}
+            {t("benefitTitle1", language)}
+          </motion.div>
+          <motion.div
+            key={`desc1-${language}`}
+            className={`text-gray-700 text-lg my-4 font-normal w-4/5 ${
+              language === "si" ? "font-noto-sans-sinhala" : ""
+            }`}
+            style={{
+              fontFamily:
+                language === "si"
+                  ? "Noto Sans Sinhala, Arial, Helvetica, sans-serif"
+                  : "Arial, Helvetica, sans-serif",
+            }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {t("benefitDesc1", language).split(t("researchWorks", language))[0]}
             <span className="text-[#1cb0f6]">
-              research shows that it works!
-            </span>{" "}
-            With quick, bite-sized lessons, you'll earn points and unlock new
-            levels while gaining real-world communication skills.
-          </div>
+              {t("researchWorks", language)}
+            </span>
+            {t("benefitDesc1", language).split(t("researchWorks", language))[1]}
+          </motion.div>
         </div>
         <div className="w-1/2 flex justify-center items-center">
           <Image
@@ -27,8 +59,14 @@ const Benefit = () => {
             height={700}
           />
         </div>
-      </div>
-      <div className="flex justify-between items-center">
+      </motion.div>
+
+      <motion.div
+        className="flex justify-between items-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         <div className="w-1/2 flex justify-center items-center">
           <Image
             src="/Gif/Person1.gif"
@@ -38,28 +76,72 @@ const Benefit = () => {
           />
         </div>
         <div className="w-1/2">
-          <div className="text-[#FF7D29] text-5xl">backed by science</div>
-          <div
-            className="text-gray-700 text-lg my-4 font-normal w-4/5"
-            style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
+          <motion.div
+            key={`title2-${language}`}
+            className={`text-[#FF7D29] text-5xl ${
+              language === "si" ? "font-noto-sans-sinhala" : ""
+            }`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            We use a combination of research-backed teaching methods and
-            delightful content to create courses that effectively teach reading,
-            writing, listening, and speaking skills!
-          </div>
+            {t("benefitTitle2", language)}
+          </motion.div>
+          <motion.div
+            key={`desc2-${language}`}
+            className={`text-gray-700 text-lg my-4 font-normal w-4/5 ${
+              language === "si" ? "font-noto-sans-sinhala" : ""
+            }`}
+            style={{
+              fontFamily:
+                language === "si"
+                  ? "Noto Sans Sinhala, Arial, Helvetica, sans-serif"
+                  : "Arial, Helvetica, sans-serif",
+            }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {t("benefitDesc2", language)}
+          </motion.div>
         </div>
-      </div>
-      <div className="flex justify-between items-center">
+      </motion.div>
+
+      <motion.div
+        className="flex justify-between items-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
         <div className="w-1/2">
-          <div className="text-[#FF7D29] text-5xl">stay motivated</div>
-          <div
-            className="text-gray-700 text-lg my-4 font-normal w-4/5"
-            style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
+          <motion.div
+            key={`title3-${language}`}
+            className={`text-[#FF7D29] text-5xl ${
+              language === "si" ? "font-noto-sans-sinhala" : ""
+            }`}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            We make it easy to form a habit of language learning with game-like
-            features, fun challenges, and reminders from our friendly mascot,
-            Duo the owl.
-          </div>
+            {t("benefitTitle3", language)}
+          </motion.div>
+          <motion.div
+            key={`desc3-${language}`}
+            className={`text-gray-700 text-lg my-4 font-normal w-4/5 ${
+              language === "si" ? "font-noto-sans-sinhala" : ""
+            }`}
+            style={{
+              fontFamily:
+                language === "si"
+                  ? "Noto Sans Sinhala, Arial, Helvetica, sans-serif"
+                  : "Arial, Helvetica, sans-serif",
+            }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {t("benefitDesc3", language)}
+          </motion.div>
         </div>
         <div className="w-1/2 flex justify-center items-center">
           <Image
@@ -69,8 +151,14 @@ const Benefit = () => {
             height={500}
           />
         </div>
-      </div>
-      <div className="flex justify-between items-center">
+      </motion.div>
+
+      <motion.div
+        className="flex justify-between items-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+      >
         <div className="w-1/2 flex justify-center items-center">
           <Image
             src="/Gif/readingboy2.gif"
@@ -80,17 +168,44 @@ const Benefit = () => {
           />
         </div>
         <div className="w-1/2">
-          <div className="text-[#FF7D29] text-5xl">backed by science</div>
-          <div
-            className="text-gray-700 text-lg my-4 font-normal w-4/5"
-            style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
+          <motion.div
+            key={`title4-${language}`}
+            className={`text-[#FF7D29] text-5xl ${
+              language === "si" ? "font-noto-sans-sinhala" : ""
+            }`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            We use a combination of research-backed teaching methods and
-            delightful content to create courses that effectively teach reading,
-            writing, listening, and speaking skills!
-          </div>
+            {t("benefitTitle4", language)}
+          </motion.div>
+          <motion.div
+            key={`desc4-${language}`}
+            className={`text-gray-700 text-lg my-4 font-normal w-4/5 ${
+              language === "si" ? "font-noto-sans-sinhala" : ""
+            }`}
+            style={{
+              fontFamily:
+                language === "si"
+                  ? "Noto Sans Sinhala, Arial, Helvetica, sans-serif"
+                  : "Arial, Helvetica, sans-serif",
+            }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {t("benefitDesc4", language)}
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
+
+      <style jsx>{`
+        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700&display=swap");
+
+        .font-noto-sans-sinhala {
+          font-family: "Noto Sans Sinhala", sans-serif;
+        }
+      `}</style>
     </div>
   );
 };
