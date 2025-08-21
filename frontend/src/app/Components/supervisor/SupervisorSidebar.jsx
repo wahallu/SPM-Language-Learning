@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 const SupervisorSidebar = () => {
   const pathname = usePathname();
@@ -79,9 +80,15 @@ const SupervisorSidebar = () => {
       {/* Profile Section */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-[#FF7D29] rounded-full flex items-center justify-center text-white font-bold">
-            SV
-          </div>
+          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+  <Image
+    src="/ZAlogo.png"
+    alt="ZorsCode Academy"
+    width={32}
+    height={32}
+    className="object-contain"
+  />
+</div>
           {!isCollapsed && (
             <div>
               <p className="font-semibold text-gray-800">Supervisor</p>
