@@ -2,10 +2,14 @@ package com.qualityeducation.service;
 
 import com.qualityeducation.dto.CourseRequest;
 import com.qualityeducation.dto.CourseResponse;
+import com.qualityeducation.dto.ModuleResponse;
 import com.qualityeducation.model.Course;
+import com.qualityeducation.model.Module;
 import com.qualityeducation.repository.CourseRepository;
+import com.qualityeducation.repository.ModuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +21,9 @@ public class CourseService {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private ModuleRepository moduleRepository;
 
     public CourseResponse createCourse(CourseRequest request, String teacherId) {
         Course course = new Course();
@@ -34,7 +41,7 @@ public class CourseService {
         course.setTeacherId(teacherId);
         course.setStatus("draft");
         course.setStudents(0);
-        course.setModules(0);
+        course.setModules(0);  // Initialize with 0 modules
         course.setCreatedAt(LocalDateTime.now());
 
         Course saved = courseRepository.save(course);
@@ -51,6 +58,38 @@ public class CourseService {
     public Optional<CourseResponse> getCourseById(String courseId) {
         Optional<Course> course = courseRepository.findById(courseId);
         return course.map(this::mapToCourseResponse);
+    }
+
+    /**
+     * Get course with its modules
+     */
+    public Optional<CourseResponse> getCourseWithModules(String courseId, String teacherId) {
+        Optional<Course> courseOpt = courseRepository.findById(courseId);
+
+        if (courseOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Course course = courseOpt.get();
+
+        // Verify teacher has access to this course
+        if (!course.getTeacherId().equals(teacherId)) {
+            return Optional.empty();
+        }
+
+        CourseResponse courseResponse = mapToCourseResponse(course);
+
+        // Get modules for this course
+        List<Module> modules = moduleRepository.findByCourseIdOrderByOrderAsc(courseId);
+        List<ModuleResponse> moduleResponses = modules.stream()
+                .map(ModuleResponse::fromModule)
+                .collect(Collectors.toList());
+
+        // You might want to add a modules field to CourseResponse or create a new DTO
+        // For now, we'll update the modules count
+        courseResponse.setModules(modules.size());
+
+        return Optional.of(courseResponse);
     }
 
     public List<CourseResponse> getAllCourses() {
@@ -82,8 +121,27 @@ public class CourseService {
         throw new RuntimeException("Course not found with id: " + courseId);
     }
 
+    @Transactional
     public void deleteCourse(String courseId) {
+        // First delete all modules associated with this course
+        moduleRepository.deleteByCourseId(courseId);
+
+        // Then delete the course
         courseRepository.deleteById(courseId);
+    }
+
+    /**
+     * Update course module count (called when modules are added/removed)
+     */
+    @Transactional
+    public void updateCourseModuleCount(String courseId) {
+        Optional<Course> courseOpt = courseRepository.findById(courseId);
+        if (courseOpt.isPresent()) {
+            Course course = courseOpt.get();
+            long moduleCount = moduleRepository.countByCourseId(courseId);
+            course.setModules((int) moduleCount);
+            courseRepository.save(course);
+        }
     }
 
     private CourseResponse mapToCourseResponse(Course course) {

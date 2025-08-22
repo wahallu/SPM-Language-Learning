@@ -15,7 +15,7 @@ const CreateCoursePage = () => {
     description: '',
     instructor: 'Dr. Maria Rodriguez',
     instructorTitle: 'Language Expert',
-    image: '',
+    image: '' || 'https://res.cloudinary.com/dgwsugfov/image/upload/v1755847709/How-to-create-an-online-course_dyvjfj.jpg',
     price: '',
     estimatedDuration: '',
     prerequisites: [],

@@ -72,15 +72,6 @@ class ApiService {
     return null;
   }
 
-  // Test endpoint for token validation
-  static async validateToken() {
-    const response = await fetch(`${API_BASE_URL}/test/validate-token`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-    });
-    return this.handleResponse(response);
-  }
-
   // Authentication APIs
   static async teacherLogin(loginData) {
     const response = await fetch(`${API_BASE_URL}/teacher/login`, {
@@ -155,6 +146,115 @@ class ApiService {
   static async deleteCourse(courseId) {
     const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
       method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // =================== MODULE APIs ===================
+
+  /**
+   * Create a new module for a course
+   */
+  static async createModule(courseId, moduleData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/modules/course/${courseId}`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(moduleData),
+      });
+      return this.handleResponse(response);
+    } catch (error) {
+      console.error('Create module error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all modules for a course
+   */
+  static async getModulesByCourse(courseId) {
+    const response = await fetch(`${API_BASE_URL}/modules/course/${courseId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Get a specific module by ID
+   */
+  static async getModuleById(moduleId) {
+    const response = await fetch(`${API_BASE_URL}/modules/${moduleId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Update a module
+   */
+  static async updateModule(moduleId, moduleData) {
+    const response = await fetch(`${API_BASE_URL}/modules/${moduleId}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(moduleData),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Delete a module
+   */
+  static async deleteModule(moduleId) {
+    const response = await fetch(`${API_BASE_URL}/modules/${moduleId}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Reorder modules in a course
+   */
+  static async reorderModules(courseId, reorderData) {
+    const response = await fetch(`${API_BASE_URL}/modules/course/${courseId}/reorder`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(reorderData),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Get all modules by teacher
+   */
+  static async getModulesByTeacher() {
+    const response = await fetch(`${API_BASE_URL}/modules/teacher`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Update module status
+   */
+  static async updateModuleStatus(moduleId, status) {
+    const response = await fetch(`${API_BASE_URL}/modules/${moduleId}/status?status=${status}`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Get next available order for a course
+   */
+  static async getNextOrderForCourse(courseId) {
+    const response = await fetch(`${API_BASE_URL}/modules/course/${courseId}/next-order`, {
+      method: 'GET',
       headers: this.getAuthHeaders(),
     });
     return this.handleResponse(response);
