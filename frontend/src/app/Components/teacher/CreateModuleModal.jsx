@@ -10,7 +10,9 @@ const CreateModuleModal = ({ onClose, onSubmit, moduleCount, courseId }) => {
     description: '',
     duration: '',
     order: moduleCount + 1,
-    status: 'draft' // Default status
+    learningObjectives: [],
+    prerequisites: [],
+    coverImage: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -39,12 +41,16 @@ const CreateModuleModal = ({ onClose, onSubmit, moduleCount, courseId }) => {
       newErrors.title = 'Module title is required';
     } else if (moduleData.title.length < 3) {
       newErrors.title = 'Module title must be at least 3 characters';
+    } else if (moduleData.title.length > 200) {
+      newErrors.title = 'Module title cannot exceed 200 characters';
     }
 
     if (!moduleData.description.trim()) {
       newErrors.description = 'Module description is required';
     } else if (moduleData.description.length < 10) {
       newErrors.description = 'Description must be at least 10 characters';
+    } else if (moduleData.description.length > 1000) {
+      newErrors.description = 'Description cannot exceed 1000 characters';
     }
 
     if (!moduleData.duration.trim()) {
@@ -80,38 +86,37 @@ const CreateModuleModal = ({ onClose, onSubmit, moduleCount, courseId }) => {
         throw new Error('Course ID is required to create a module');
       }
 
-      // Prepare module data for API
+      // Prepare module data for API - match the backend DTO structure
       const modulePayload = {
-        ...moduleData,
-        courseId: courseId,
-        teacherId: currentUser.id,
-        lessons: [], // Initialize empty lessons array
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        title: moduleData.title.trim(),
+        description: moduleData.description.trim(),
+        duration: moduleData.duration === 'custom' ? moduleData.customDuration || moduleData.duration : moduleData.duration,
+        order: parseInt(moduleData.order),
+        coverImage: moduleData.coverImage || null,
+        learningObjectives: moduleData.learningObjectives.filter(obj => obj.trim()),
+        prerequisites: moduleData.prerequisites.filter(prereq => prereq.trim())
       };
 
-      console.log('Creating module with data:', modulePayload);
+      console.log('Creating module with payload:', modulePayload);
+      console.log('Course ID:', courseId);
 
-      // For now, we'll simulate the API call since you don't have a module endpoint yet
-      // TODO: Replace this with actual API call when module endpoint is implemented
-      // const response = await ApiService.createModule(courseId, modulePayload);
+      // Call the real API to create module
+      const response = await ApiService.createModule(courseId, modulePayload);
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('API Response:', response);
 
-      // Create a mock successful response
-      const mockModule = {
-        id: Date.now(), // Generate temporary ID
-        ...modulePayload,
-        lessons: 0, // Number of lessons (initially 0)
-        status: 'draft'
-      };
+      if (response.success) {
+        // Call the parent component's onSubmit function with the created module
+        onSubmit(response.data);
 
-      // Call the parent component's onSubmit function
-      onSubmit(mockModule);
+        // Close the modal
+        onClose();
 
-      // Show success message
-      console.log('Module created successfully:', mockModule);
+        // Show success message
+        console.log('Module created successfully:', response.data);
+      } else {
+        throw new Error(response.message || response.error || 'Failed to create module');
+      }
 
     } catch (error) {
       console.error('Failed to create module:', error);
@@ -183,10 +188,10 @@ const CreateModuleModal = ({ onClose, onSubmit, moduleCount, courseId }) => {
                       errors.title ? 'border-red-500' : 'border-gray-300'
                   } ${isLoading ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                   placeholder="e.g., Introduction to Grammar"
-                  maxLength={100}
+                  maxLength={200}
               />
               {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-              <p className="text-gray-500 text-xs mt-1">{moduleData.title.length}/100 characters</p>
+              <p className="text-gray-500 text-xs mt-1">{moduleData.title.length}/200 characters</p>
             </div>
 
             <div>
@@ -203,10 +208,10 @@ const CreateModuleModal = ({ onClose, onSubmit, moduleCount, courseId }) => {
                       errors.description ? 'border-red-500' : 'border-gray-300'
                   } ${isLoading ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                   placeholder="Describe what students will learn in this module..."
-                  maxLength={500}
+                  maxLength={1000}
               />
               {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-              <p className="text-gray-500 text-xs mt-1">{moduleData.description.length}/500 characters</p>
+              <p className="text-gray-500 text-xs mt-1">{moduleData.description.length}/1000 characters</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -271,10 +276,29 @@ const CreateModuleModal = ({ onClose, onSubmit, moduleCount, courseId }) => {
                       placeholder="e.g., 10 days, 6 weeks, 3 months"
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent"
                       disabled={isLoading}
-                      onChange={(e) => setModuleData(prev => ({ ...prev, duration: e.target.value }))}
+                      onChange={(e) => setModuleData(prev => ({ ...prev, customDuration: e.target.value }))}
                   />
                 </motion.div>
             )}
+
+            {/* Cover Image URL (Optional) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cover Image URL (Optional)
+              </label>
+              <input
+                  type="url"
+                  name="coverImage"
+                  value={moduleData.coverImage}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
+                      isLoading ? 'bg-gray-50 cursor-not-allowed' : ''
+                  }`}
+                  placeholder="https://example.com/module-image.jpg"
+              />
+              <p className="text-gray-500 text-xs mt-1">Optional: Add a cover image for your module</p>
+            </div>
 
             <div className="flex gap-4 pt-4">
               <button
