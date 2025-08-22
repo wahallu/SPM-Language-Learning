@@ -29,8 +29,8 @@ export const translations = {
     benefitDesc3: "We make it easy to form a habit of language learning with game-like features, fun challenges, and reminders from our friendly mascot, Duo the owl.",
     
     benefitTitle4: "making learning fun.",
-    benefitDesc4: "It's hard to stay motivated when learning online, so we made Duolingo so fun that people would prefer picking up new skills over playing a game.",
-    
+    benefitDesc4: "It's hard to stay motivated when learning online, so we made ZorsCode Academy so fun that people would prefer picking up new skills over playing a game.",
+
     // Get Started Section
     getStartedTitle: "learn a language with zorscode academy",
     
@@ -92,7 +92,7 @@ export const translations = {
     benefitDesc3: "ක්‍රීඩා වැනි විශේෂාංග, විනෝදජනක අභියෝග සහ අපගේ මිත්‍රශීලී වෙස්මුහුණු වන Duo the owl ගේ මතක් කිරීම් සමඟ භාෂා ඉගෙනීමේ පුරුද්දක් සෑදීම අපි පහසු කරමු.",
     
     benefitTitle4: "ඉගෙනීම විනෝදජනක කිරීම.",
-    benefitDesc4: "අන්තර්ජාලය හරහා ඉගෙන ගැනීමේදී අභිප්‍රේරණය පවත්වා ගැනීම අපහසුයි, එබැවින් අපි Duolingo එතරම් විනෝදජනක කළේ මිනිසුන් ක්‍රීඩාවකට වඩා නව කුසලතා ඉගෙන ගැනීමට කැමති වන පරිදිය.",
+    benefitDesc4: "අන්තර්ජාලය හරහා ඉගෙන ගැනීමේදී අභිප්‍රේරණය පවත්වා ගැනීම අපහසුයි, එබැවින් අපි ZorsCode Academy එතරම් විනෝදජනක කළේ මිනිසුන් ක්‍රීඩාවකට වඩා නව කුසලතා ඉගෙන ගැනීමට කැමති වන පරිදිය.",
     
     // Get Started Section
     getStartedTitle: "zorscode academy සමඟ භාෂාවක් ඉගෙන ගන්න",
