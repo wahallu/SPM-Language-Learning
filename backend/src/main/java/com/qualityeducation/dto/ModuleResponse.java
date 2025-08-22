@@ -50,7 +50,6 @@ public class ModuleResponse {
                 .coverImage(module.getCoverImage())
                 .learningObjectives(module.getLearningObjectives())
                 .prerequisites(module.getPrerequisites())
-                .lessonIds(module.getLessonIds())
                 .build();
     }
 }

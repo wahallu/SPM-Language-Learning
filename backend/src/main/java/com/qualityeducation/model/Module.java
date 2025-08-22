@@ -6,11 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.ArrayList;
 
 @Data
 @Builder
@@ -27,17 +26,18 @@ public class Module {
     private String duration;
     private Integer order;
 
-    // Reference to the course this module belongs to
+    @Indexed
     private String courseId;
 
-    // Reference to the teacher who created this module
+    @Indexed
     private String teacherId;
 
     @Builder.Default
     private ModuleStatus status = ModuleStatus.DRAFT;
 
-    @Builder.Default
-    private List<String> lessonIds = new ArrayList<>(); // References to lessons in this module
+    private String coverImage;
+    private List<String> learningObjectives;
+    private List<String> prerequisites;
 
     @Builder.Default
     private Integer totalLessons = 0;
@@ -46,7 +46,10 @@ public class Module {
     private Integer completedLessons = 0;
 
     @Builder.Default
-    private Integer totalDurationMinutes = 0; // Total duration in minutes
+    private Double completionPercentage = 0.0;
+
+    @Builder.Default
+    private Integer totalDurationMinutes = 0;
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -54,41 +57,60 @@ public class Module {
     private LocalDateTime updatedAt;
 
     // Additional metadata
-    private String coverImage;
-    private List<String> learningObjectives;
-    private List<String> prerequisites;
+    private String difficulty;
+    private List<String> tags;
+    private String language;
+
+    @Builder.Default
+    private Boolean isActive = true;
+
+    @Builder.Default
+    private Integer views = 0;
+
+    @Builder.Default
+    private Double averageRating = 0.0;
+
+    @Builder.Default
+    private Integer totalRatings = 0;
 
     public enum ModuleStatus {
         DRAFT,
         PUBLISHED,
+        UNDER_REVIEW,
         ARCHIVED,
-        UNDER_REVIEW
+        REJECTED
     }
 
     // Helper methods
-    public void addLesson(String lessonId) {
-        if (this.lessonIds == null) {
-            this.lessonIds = new ArrayList<>();
-        }
-        this.lessonIds.add(lessonId);
-        this.totalLessons = this.lessonIds.size();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void removeLesson(String lessonId) {
-        if (this.lessonIds != null) {
-            this.lessonIds.remove(lessonId);
-            this.totalLessons = this.lessonIds.size();
-            this.updatedAt = LocalDateTime.now();
+    public void updateCompletionPercentage() {
+        if (totalLessons != null && totalLessons > 0 && completedLessons != null) {
+            this.completionPercentage = (double) completedLessons / totalLessons * 100.0;
+        } else {
+            this.completionPercentage = 0.0;
         }
     }
 
-    public double getCompletionPercentage() {
-        if (totalLessons == 0) return 0.0;
-        return (double) completedLessons / totalLessons * 100.0;
+    public void incrementViews() {
+        this.views = (this.views == null ? 0 : this.views) + 1;
     }
 
-    public void updateTimestamp() {
-        this.updatedAt = LocalDateTime.now();
+    public void updateRating(Double newRating) {
+        if (this.totalRatings == null || this.totalRatings == 0) {
+            this.averageRating = newRating;
+            this.totalRatings = 1;
+        } else {
+            double totalScore = this.averageRating * this.totalRatings;
+            this.totalRatings += 1;
+            this.averageRating = (totalScore + newRating) / this.totalRatings;
+        }
+    }
+
+    public String getFormattedDuration() {
+        if (duration == null) return "Unknown";
+        return duration;
+    }
+
+    public boolean hasLessons() {
+        return totalLessons != null && totalLessons > 0;
     }
 }

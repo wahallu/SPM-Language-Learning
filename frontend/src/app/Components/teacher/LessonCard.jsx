@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
 
-const LessonCard = ({ lesson, moduleId, courseId, onDelete, delay = 0 }) => {
+const LessonCard = ({ lesson, moduleId, courseId, onDelete, onPublish, onUnpublish, delay = 0 }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const getYouTubeVideoId = (url) => {
+    if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
@@ -15,6 +16,35 @@ const LessonCard = ({ lesson, moduleId, courseId, onDelete, delay = 0 }) => {
 
   const videoId = getYouTubeVideoId(lesson.videoUrl);
   const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
+  const getStatusDisplay = (status) => {
+    if (!status) return 'Draft';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  };
+
+  const getStatusColor = (status) => {
+    switch (status?.toUpperCase()) {
+      case 'PUBLISHED':
+        return 'bg-green-100 text-green-800';
+      case 'DRAFT':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'UNDER_REVIEW':
+        return 'bg-blue-100 text-blue-800';
+      case 'REJECTED':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <motion.div
@@ -54,12 +84,8 @@ const LessonCard = ({ lesson, moduleId, courseId, onDelete, delay = 0 }) => {
                 <h3 className="text-lg font-semibold text-gray-800 truncate">
                   {lesson.order}. {lesson.title}
                 </h3>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  lesson.status === 'published' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {lesson.status}
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(lesson.status)}`}>
+                  {getStatusDisplay(lesson.status)}
                 </span>
               </div>
 
@@ -72,14 +98,31 @@ const LessonCard = ({ lesson, moduleId, courseId, onDelete, delay = 0 }) => {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {lesson.duration}
+                  {lesson.duration || 'N/A'}
                 </span>
                 <span className="flex items-center gap-1">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {lesson.quizzes.length} quiz{lesson.quizzes.length !== 1 ? 'es' : ''}
+                  {lesson.quizzes?.length || 0} quiz{(lesson.quizzes?.length || 0) !== 1 ? 'es' : ''}
                 </span>
+                {lesson.views !== undefined && (
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    {lesson.views || 0} views
+                  </span>
+                )}
+              </div>
+
+              {/* Created/Updated dates */}
+              <div className="flex items-center gap-4 text-xs text-gray-400 mt-2">
+                <span>Created: {formatDate(lesson.createdAt)}</span>
+                {lesson.updatedAt && (
+                  <span>Updated: {formatDate(lesson.updatedAt)}</span>
+                )}
               </div>
             </div>
 
@@ -108,10 +151,10 @@ const LessonCard = ({ lesson, moduleId, courseId, onDelete, delay = 0 }) => {
                     <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                   </svg>
                 </button>
-                
+
                 {/* Dropdown Menu */}
                 <div className="absolute right-0 top-10 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                  <Link 
+                  <Link
                     href={`/teacher/courses/${courseId}/modules/${moduleId}/lessons/${lesson.id}/edit`}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
@@ -122,19 +165,52 @@ const LessonCard = ({ lesson, moduleId, courseId, onDelete, delay = 0 }) => {
                       Edit Lesson
                     </span>
                   </Link>
+
+                  {lesson.videoUrl && (
+                    <button
+                      onClick={() => window.open(lesson.videoUrl, '_blank')}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        Preview Video
+                      </span>
+                    </button>
+                  )}
+
+                  {/* Publish/Unpublish actions */}
+                  {lesson.status === 'DRAFT' && onPublish && (
+                    <button
+                      onClick={() => onPublish(lesson.id)}
+                      className="block w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50"
+                    >
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Publish Lesson
+                      </span>
+                    </button>
+                  )}
+
+                  {lesson.status === 'PUBLISHED' && onUnpublish && (
+                    <button
+                      onClick={() => onUnpublish(lesson.id)}
+                      className="block w-full text-left px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50"
+                    >
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Unpublish Lesson
+                      </span>
+                    </button>
+                  )}
+
                   <button
-                    onClick={() => window.open(lesson.videoUrl, '_blank')}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <span className="flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                      Preview Video
-                    </span>
-                  </button>
-                  <button
-                    onClick={onDelete}
+                    onClick={() => onDelete && onDelete(lesson.id)}
                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                   >
                     <span className="flex items-center gap-2">
@@ -161,54 +237,96 @@ const LessonCard = ({ lesson, moduleId, courseId, onDelete, delay = 0 }) => {
         <div className="px-6 pb-6 border-t border-gray-100">
           <div className="pt-4 space-y-4">
             {/* Video URL */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Video URL</h4>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={lesson.videoUrl}
-                  readOnly
-                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"
-                />
-                <button
-                  onClick={() => navigator.clipboard.writeText(lesson.videoUrl)}
-                  className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
-                  title="Copy URL"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                </button>
+            {lesson.videoUrl && (
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Video URL</h4>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={lesson.videoUrl}
+                    readOnly
+                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"
+                  />
+                  <button
+                    onClick={() => navigator.clipboard.writeText(lesson.videoUrl)}
+                    className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                    title="Copy URL"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
+            )}
+
+            {/* Additional lesson metadata */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {lesson.difficulty && (
+                <div>
+                  <h4 className="font-medium text-gray-700">Difficulty</h4>
+                  <p className="text-gray-600">{lesson.difficulty}</p>
+                </div>
+              )}
+              {lesson.language && (
+                <div>
+                  <h4 className="font-medium text-gray-700">Language</h4>
+                  <p className="text-gray-600">{lesson.language}</p>
+                </div>
+              )}
+              {lesson.averageRating !== undefined && lesson.averageRating > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-700">Rating</h4>
+                  <p className="text-gray-600">{lesson.averageRating.toFixed(1)}/5 ({lesson.totalRatings || 0} ratings)</p>
+                </div>
+              )}
             </div>
 
+            {/* Tags */}
+            {lesson.tags && lesson.tags.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Tags</h4>
+                <div className="flex flex-wrap gap-1">
+                  {lesson.tags.map((tag, index) => (
+                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Quiz Questions */}
-            {lesson.quizzes.length > 0 && (
+            {lesson.quizzes && lesson.quizzes.length > 0 && (
               <div>
                 <h4 className="text-sm font-medium text-gray-700 mb-2">
                   Quiz Questions ({lesson.quizzes.length})
                 </h4>
                 <div className="space-y-3">
                   {lesson.quizzes.map((quiz, index) => (
-                    <div key={quiz.id} className="bg-gray-50 rounded-lg p-3">
+                    <div key={quiz.id || index} className="bg-gray-50 rounded-lg p-3">
                       <p className="font-medium text-gray-800 text-sm mb-2">
                         {index + 1}. {quiz.question}
                       </p>
                       <div className="grid grid-cols-1 gap-1">
-                        {quiz.options.map((option, optIndex) => (
+                        {quiz.options && quiz.options.map((option, optIndex) => (
                           <div
                             key={optIndex}
-                            className={`text-xs px-2 py-1 rounded ${
-                              optIndex === quiz.correctAnswer
+                            className={`text-xs px-2 py-1 rounded ${optIndex === quiz.correctAnswer
                                 ? 'bg-green-100 text-green-800 font-medium'
                                 : 'bg-white text-gray-600'
-                            }`}
+                              }`}
                           >
                             {String.fromCharCode(65 + optIndex)}. {option}
                             {optIndex === quiz.correctAnswer && ' ✓'}
                           </div>
                         ))}
                       </div>
+                      {quiz.explanation && (
+                        <p className="text-xs text-gray-500 mt-2 italic">
+                          Explanation: {quiz.explanation}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -223,12 +341,14 @@ const LessonCard = ({ lesson, moduleId, courseId, onDelete, delay = 0 }) => {
               >
                 Edit Lesson
               </Link>
-              <button
-                onClick={() => window.open(lesson.videoUrl, '_blank')}
-                className="flex-1 text-center py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-              >
-                Preview Video
-              </button>
+              {lesson.videoUrl && (
+                <button
+                  onClick={() => window.open(lesson.videoUrl, '_blank')}
+                  className="flex-1 text-center py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                >
+                  Preview Video
+                </button>
+              )}
             </div>
           </div>
         </div>

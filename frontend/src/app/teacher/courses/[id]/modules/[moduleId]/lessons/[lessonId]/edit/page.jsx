@@ -1,41 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
+import ApiService from '@/app/utils/api';
 
-const EditLessonPage = ({ params }) => {
+const EditLessonPage = () => {
   const router = useRouter();
-  
-  // Mock lesson data - in real app, this would be fetched based on lessonId
-  const [lessonData, setLessonData] = useState({
-    id: 1,
-    title: "English Alphabet",
-    description: "Learn the 26 letters of the English alphabet and their pronunciation",
-    videoUrl: "https://www.youtube.com/watch?v=example1",
-    duration: "10 minutes",
-    order: 1,
-    status: "published",
-    quizzes: [
-      {
-        id: 1,
-        question: "How many letters are in the English alphabet?",
-        options: ["24", "25", "26"],
-        correctAnswer: 2
-      },
-      {
-        id: 2,
-        question: "Which letter comes after 'M' in the alphabet?",
-        options: ["L", "N", "O"],
-        correctAnswer: 1
-      }
-    ],
-    createdAt: "2024-01-15",
-    updatedAt: "2024-01-20"
-  });
+  const params = useParams();
+  const { courseId, moduleId, lessonId } = params;
 
+  const [lessonData, setLessonData] = useState(null);
   const [currentQuiz, setCurrentQuiz] = useState({
     question: '',
     options: ['', '', ''],
@@ -44,8 +20,39 @@ const EditLessonPage = ({ params }) => {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const [isEditingQuiz, setIsEditingQuiz] = useState(null);
+
+  // Fetch lesson data on component mount
+  useEffect(() => {
+    if (lessonId) {
+      fetchLessonData();
+    }
+  }, [lessonId]);
+
+  const fetchLessonData = async () => {
+    try {
+      setFetchLoading(true);
+      console.log('Fetching lesson data for ID:', lessonId);
+
+      const response = await ApiService.getLessonById(lessonId);
+      console.log('Lesson API response:', response);
+
+      if (response.success) {
+        setLessonData(response.data);
+      } else {
+        throw new Error(response.message || 'Failed to fetch lesson data');
+      }
+    } catch (error) {
+      console.error('Error fetching lesson data:', error);
+      alert('Failed to load lesson data: ' + error.message);
+      // Navigate back if lesson not found
+      router.push(`/teacher/courses/${courseId}/modules/${moduleId}`);
+    } finally {
+      setFetchLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -83,14 +90,14 @@ const EditLessonPage = ({ params }) => {
     if (currentQuiz.question && currentQuiz.options.every(opt => opt.trim())) {
       const newQuiz = {
         ...currentQuiz,
-        id: Date.now()
+        id: Date.now().toString() // Temporary ID for frontend
       };
-      
+
       setLessonData(prev => ({
         ...prev,
-        quizzes: [...prev.quizzes, newQuiz]
+        quizzes: [...(prev.quizzes || []), newQuiz]
       }));
-      
+
       setCurrentQuiz({
         question: '',
         options: ['', '', ''],
@@ -108,11 +115,11 @@ const EditLessonPage = ({ params }) => {
     if (currentQuiz.question && currentQuiz.options.every(opt => opt.trim())) {
       setLessonData(prev => ({
         ...prev,
-        quizzes: prev.quizzes.map(q => 
+        quizzes: (prev.quizzes || []).map(q =>
           q.id === isEditingQuiz ? currentQuiz : q
         )
       }));
-      
+
       setCurrentQuiz({
         question: '',
         options: ['', '', ''],
@@ -135,7 +142,7 @@ const EditLessonPage = ({ params }) => {
     if (confirm('Are you sure you want to delete this quiz question?')) {
       setLessonData(prev => ({
         ...prev,
-        quizzes: prev.quizzes.filter(q => q.id !== quizId)
+        quizzes: (prev.quizzes || []).filter(q => q.id !== quizId)
       }));
     }
   };
@@ -143,21 +150,21 @@ const EditLessonPage = ({ params }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!lessonData.title.trim()) {
+    if (!lessonData.title?.trim()) {
       newErrors.title = 'Lesson title is required';
     }
 
-    if (!lessonData.description.trim()) {
+    if (!lessonData.description?.trim()) {
       newErrors.description = 'Description is required';
     }
 
-    if (!lessonData.videoUrl.trim()) {
+    if (!lessonData.videoUrl?.trim()) {
       newErrors.videoUrl = 'Video URL is required';
     } else if (!lessonData.videoUrl.includes('youtube.com') && !lessonData.videoUrl.includes('youtu.be')) {
       newErrors.videoUrl = 'Please provide a valid YouTube URL';
     }
 
-    if (!lessonData.duration.trim()) {
+    if (!lessonData.duration?.trim()) {
       newErrors.duration = 'Duration is required';
     }
 
@@ -167,34 +174,90 @@ const EditLessonPage = ({ params }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       setActiveTab('details');
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log('Lesson updated:', lessonData);
-      router.push(`/teacher/courses/${params.courseId}/modules/${params.moduleId}`);
-      
+      console.log('Updating lesson with data:', lessonData);
+
+      // Prepare the update data
+      const updateData = {
+        title: lessonData.title,
+        description: lessonData.description,
+        videoUrl: lessonData.videoUrl,
+        duration: lessonData.duration,
+        order: lessonData.order,
+        status: lessonData.status,
+        coverImage: lessonData.coverImage,
+        transcript: lessonData.transcript,
+        tags: lessonData.tags,
+        difficulty: lessonData.difficulty,
+        language: lessonData.language,
+        quizzes: lessonData.quizzes
+      };
+
+      const response = await ApiService.updateLesson(lessonId, updateData);
+
+      if (response.success) {
+        console.log('Lesson updated successfully');
+        alert('Lesson updated successfully!');
+        router.push(`/teacher/courses/${courseId}/modules/${moduleId}`);
+      } else {
+        throw new Error(response.message || 'Failed to update lesson');
+      }
+
     } catch (error) {
       console.error('Failed to update lesson:', error);
-      alert('Failed to update lesson. Please try again.');
+      alert('Failed to update lesson: ' + error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const getYouTubeVideoId = (url) => {
+    if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
+
+  if (fetchLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <motion.div
+            className="w-16 h-16 border-4 border-[#FF7D29] border-t-transparent rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="text-gray-600">Loading lesson data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!lessonData) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+        <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <span className="text-4xl">⚠️</span>
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">Lesson Not Found</h3>
+        <p className="text-gray-600 mb-6">The lesson you're looking for doesn't exist or has been removed.</p>
+        <Link
+          href={`/teacher/courses/${courseId}/modules/${moduleId}`}
+          className="bg-[#FF7D29] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#FF9D5C] transition-all"
+        >
+          Back to Module
+        </Link>
+      </div>
+    );
+  }
 
   const videoId = getYouTubeVideoId(lessonData.videoUrl);
 
@@ -208,14 +271,14 @@ const EditLessonPage = ({ params }) => {
     <div className="space-y-8">
       {/* Header */}
       <motion.div
-        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6"
+        className="bg-white rounded-2xl shadow-lg p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div>
-          <div className="flex items-center gap-4 mb-4">
-            <Link 
-              href={`/teacher/courses/${params.courseId}/modules/${params.moduleId}`}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <Link
+              href={`/teacher/courses/${courseId}/modules/${moduleId}`}
               className="text-gray-500 hover:text-gray-700 flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,29 +286,14 @@ const EditLessonPage = ({ params }) => {
               </svg>
               Back to Module
             </Link>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              lessonData.status === 'published' 
-                ? 'bg-green-100 text-green-800' 
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${lessonData.status === 'PUBLISHED'
+                ? 'bg-green-100 text-green-800'
                 : 'bg-yellow-100 text-yellow-800'
-            }`}>
+              }`}>
               {lessonData.status}
             </span>
           </div>
-          
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Edit Lesson</h1>
-          <p className="text-gray-600">{lessonData.title}</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => window.open(lessonData.videoUrl, '_blank')}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200 transition-all flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m6-4a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Preview Video
-          </button>
+
           <button
             onClick={handleSubmit}
             disabled={isLoading}
@@ -265,6 +313,9 @@ const EditLessonPage = ({ params }) => {
             )}
           </button>
         </div>
+
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Edit Lesson</h1>
+        <p className="text-gray-600">{lessonData.title}</p>
       </motion.div>
 
       {/* Main Content */}
@@ -276,27 +327,21 @@ const EditLessonPage = ({ params }) => {
       >
         {/* Tabs */}
         <div className="border-b border-gray-200">
-          <nav className="flex">
+          <div className="flex">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 font-medium transition-all ${
-                  activeTab === tab.id
+                className={`flex-1 px-6 py-4 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === tab.id
                     ? 'text-[#FF7D29] border-b-2 border-[#FF7D29] bg-orange-50'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                }`}
+                    : 'text-gray-500 hover:text-gray-700'
+                  }`}
               >
-                <span className="text-lg">{tab.icon}</span>
+                <span>{tab.icon}</span>
                 {tab.label}
-                {tab.id === 'quiz' && lessonData.quizzes.length > 0 && (
-                  <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
-                    {lessonData.quizzes.length}
-                  </span>
-                )}
               </button>
             ))}
-          </nav>
+          </div>
         </div>
 
         {/* Tab Content */}
@@ -319,11 +364,10 @@ const EditLessonPage = ({ params }) => {
                     <input
                       type="text"
                       name="title"
-                      value={lessonData.title}
+                      value={lessonData.title || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
-                        errors.title ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${errors.title ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="e.g., English Alphabet Basics"
                     />
                     {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
@@ -335,12 +379,11 @@ const EditLessonPage = ({ params }) => {
                     </label>
                     <textarea
                       name="description"
-                      value={lessonData.description}
+                      value={lessonData.description || ''}
                       onChange={handleInputChange}
                       rows={4}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
-                        errors.description ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${errors.description ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Describe what students will learn in this lesson..."
                     />
                     {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
@@ -353,11 +396,10 @@ const EditLessonPage = ({ params }) => {
                     <input
                       type="url"
                       name="videoUrl"
-                      value={lessonData.videoUrl}
+                      value={lessonData.videoUrl || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
-                        errors.videoUrl ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${errors.videoUrl ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="https://www.youtube.com/watch?v=..."
                     />
                     {errors.videoUrl && <p className="text-red-500 text-sm mt-1">{errors.videoUrl}</p>}
@@ -374,11 +416,10 @@ const EditLessonPage = ({ params }) => {
                       <input
                         type="text"
                         name="duration"
-                        value={lessonData.duration}
+                        value={lessonData.duration || ''}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${
-                          errors.duration ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent ${errors.duration ? 'border-red-500' : 'border-gray-300'
+                          }`}
                         placeholder="e.g., 10 minutes"
                       />
                       {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration}</p>}
@@ -391,7 +432,7 @@ const EditLessonPage = ({ params }) => {
                       <input
                         type="number"
                         name="order"
-                        value={lessonData.order}
+                        value={lessonData.order || ''}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent"
                         min="1"
@@ -404,12 +445,51 @@ const EditLessonPage = ({ params }) => {
                       </label>
                       <select
                         name="status"
-                        value={lessonData.status}
+                        value={lessonData.status || 'DRAFT'}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent"
                       >
-                        <option value="draft">Draft</option>
-                        <option value="published">Published</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="PUBLISHED">Published</option>
+                        <option value="UNDER_REVIEW">Under Review</option>
+                        <option value="ARCHIVED">Archived</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Additional fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Difficulty Level
+                      </label>
+                      <select
+                        name="difficulty"
+                        value={lessonData.difficulty || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent"
+                      >
+                        <option value="">Select difficulty</option>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Language
+                      </label>
+                      <select
+                        name="language"
+                        value={lessonData.language || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent"
+                      >
+                        <option value="">Select language</option>
+                        <option value="English">English</option>
+                        <option value="Tamil">Tamil</option>
+                        <option value="Sinhala">Sinhala</option>
                       </select>
                     </div>
                   </div>
@@ -446,7 +526,7 @@ const EditLessonPage = ({ params }) => {
               >
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    Quiz Questions ({lessonData.quizzes.length})
+                    Quiz Questions ({lessonData.quizzes?.length || 0})
                   </h3>
                   <p className="text-gray-600 text-sm">
                     Manage quiz questions to test students' understanding of this lesson.
@@ -454,35 +534,39 @@ const EditLessonPage = ({ params }) => {
                 </div>
 
                 {/* Existing Quiz Questions */}
-                {lessonData.quizzes.length > 0 && (
+                {lessonData.quizzes && lessonData.quizzes.length > 0 && (
                   <div className="space-y-4">
                     {lessonData.quizzes.map((quiz, index) => (
-                      <div key={quiz.id} className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                        <div className="flex items-start justify-between mb-4">
+                      <div key={quiz.id || index} className="bg-gray-50 rounded-xl p-4">
+                        <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <p className="font-medium text-gray-800 mb-3">
+                            <p className="font-medium text-gray-800 mb-2">
                               {index + 1}. {quiz.question}
                             </p>
-                            <div className="grid grid-cols-1 gap-2">
-                              {quiz.options.map((option, optIndex) => (
+                            <div className="space-y-1">
+                              {quiz.options && quiz.options.map((option, optIndex) => (
                                 <div
                                   key={optIndex}
-                                  className={`text-sm px-4 py-2 rounded-lg border ${
-                                    optIndex === quiz.correctAnswer
-                                      ? 'bg-green-100 text-green-800 border-green-200 font-medium'
-                                      : 'bg-white text-gray-600 border-gray-200'
-                                  }`}
+                                  className={`text-sm px-3 py-1 rounded-lg ${optIndex === quiz.correctAnswer
+                                      ? 'bg-green-100 text-green-800 font-medium'
+                                      : 'bg-white text-gray-600'
+                                    }`}
                                 >
                                   {String.fromCharCode(65 + optIndex)}. {option}
-                                  {optIndex === quiz.correctAnswer && ' ✓ Correct Answer'}
+                                  {optIndex === quiz.correctAnswer && ' ✓'}
                                 </div>
                               ))}
                             </div>
+                            {quiz.explanation && (
+                              <p className="text-sm text-gray-500 mt-2 italic">
+                                Explanation: {quiz.explanation}
+                              </p>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2 ml-4">
+                          <div className="flex gap-2">
                             <button
                               onClick={() => editQuiz(quiz)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="text-blue-500 hover:text-blue-700 p-1"
                               title="Edit question"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -491,11 +575,11 @@ const EditLessonPage = ({ params }) => {
                             </button>
                             <button
                               onClick={() => removeQuiz(quiz.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="text-red-500 hover:text-red-700 p-1"
                               title="Delete question"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                               </svg>
                             </button>
                           </div>
@@ -510,7 +594,7 @@ const EditLessonPage = ({ params }) => {
                   <h4 className="font-medium text-gray-800 mb-4">
                     {isEditingQuiz ? 'Edit Question' : 'Add New Question'}
                   </h4>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -539,7 +623,7 @@ const EditLessonPage = ({ params }) => {
                               onChange={() => handleQuizChange('correctAnswer', index)}
                               className="w-4 h-4 text-[#FF7D29] border-gray-300 focus:ring-[#FF7D29]"
                             />
-                            <label className="ml-2 text-sm text-gray-700 font-medium">
+                            <label className="ml-2 text-sm text-gray-700">
                               {String.fromCharCode(65 + index)}.
                             </label>
                           </div>
@@ -557,10 +641,11 @@ const EditLessonPage = ({ params }) => {
                       </p>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                       {isEditingQuiz ? (
                         <>
                           <button
+                            type="button"
                             onClick={updateQuiz}
                             disabled={!currentQuiz.question || !currentQuiz.options.every(opt => opt.trim())}
                             className="flex-1 py-2 bg-[#FF7D29] text-white rounded-xl hover:bg-[#FF9D5C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -568,14 +653,16 @@ const EditLessonPage = ({ params }) => {
                             Update Question
                           </button>
                           <button
+                            type="button"
                             onClick={cancelEditQuiz}
-                            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors"
+                            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
                           >
                             Cancel
                           </button>
                         </>
                       ) : (
                         <button
+                          type="button"
                           onClick={addQuiz}
                           disabled={!currentQuiz.question || !currentQuiz.options.every(opt => opt.trim())}
                           className="w-full py-2 bg-[#FF7D29] text-white rounded-xl hover:bg-[#FF9D5C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -599,9 +686,7 @@ const EditLessonPage = ({ params }) => {
                 className="space-y-6"
               >
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    Lesson Preview
-                  </h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Lesson Preview</h3>
                   <p className="text-gray-600 text-sm">
                     Preview how students will see this lesson.
                   </p>
@@ -627,7 +712,7 @@ const EditLessonPage = ({ params }) => {
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            {lessonData.quizzes.length} quiz{lessonData.quizzes.length !== 1 ? 'es' : ''}
+                            {lessonData.quizzes?.length || 0} quiz{(lessonData.quizzes?.length || 0) !== 1 ? 'es' : ''}
                           </span>
                         </div>
                       </div>
@@ -647,29 +732,38 @@ const EditLessonPage = ({ params }) => {
                     )}
 
                     {/* Quiz Preview */}
-                    {lessonData.quizzes.length > 0 && (
+                    {lessonData.quizzes && lessonData.quizzes.length > 0 && (
                       <div className="space-y-4">
                         <h5 className="font-medium text-gray-800">Quiz Questions:</h5>
                         {lessonData.quizzes.map((quiz, index) => (
-                          <div key={quiz.id} className="bg-white rounded-lg p-4 border border-gray-200">
+                          <div key={quiz.id || index} className="bg-white rounded-lg p-4 border border-gray-200">
                             <p className="font-medium text-gray-800 mb-3">
                               {index + 1}. {quiz.question}
                             </p>
                             <div className="space-y-2">
-                              {quiz.options.map((option, optIndex) => (
+                              {quiz.options && quiz.options.map((option, optIndex) => (
                                 <label key={optIndex} className="flex items-center gap-3 cursor-pointer">
                                   <input
                                     type="radio"
-                                    name={`preview-quiz-${quiz.id}`}
+                                    name={`preview-quiz-${quiz.id || index}`}
+                                    defaultChecked={optIndex === quiz.correctAnswer}
                                     className="w-4 h-4 text-[#FF7D29] border-gray-300 focus:ring-[#FF7D29]"
                                     disabled
                                   />
                                   <span className="text-gray-700">
                                     {String.fromCharCode(65 + optIndex)}. {option}
                                   </span>
+                                  {optIndex === quiz.correctAnswer && (
+                                    <span className="text-green-600 text-sm font-medium">✓ Correct</span>
+                                  )}
                                 </label>
                               ))}
                             </div>
+                            {quiz.explanation && (
+                              <p className="text-sm text-gray-500 mt-3 p-2 bg-blue-50 rounded">
+                                <strong>Explanation:</strong> {quiz.explanation}
+                              </p>
+                            )}
                           </div>
                         ))}
                       </div>

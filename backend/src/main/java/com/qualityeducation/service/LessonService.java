@@ -28,40 +28,16 @@ public class LessonService {
     private final CourseRepository courseRepository;
 
     @Transactional
-    public ApiResponse<LessonResponse> createLesson(String moduleId, LessonRequest request, String teacherId) {
+    public ApiResponse<LessonResponse> createLesson(String moduleId, LessonRequest request) {
         try {
-            log.info("Creating lesson for module: {} by teacher: {}", moduleId, teacherId);
+            log.info("Creating lesson for module: {}", moduleId);
 
-            // Validate module exists and belongs to teacher
-            Optional<Module> moduleOpt = moduleRepository.findById(moduleId);
-            if (moduleOpt.isEmpty()) {
+            // Validate module exists
+            if (!moduleService.moduleExists(moduleId)) {
                 return ApiResponse.error("Module not found");
             }
 
-            Module module = moduleOpt.get();
-
-            // Verify the course exists and belongs to the teacher
-            Optional<Course> courseOpt = courseRepository.findById(module.getCourseId());
-            if (courseOpt.isEmpty()) {
-                return ApiResponse.error("Course not found");
-            }
-
-            Course course = courseOpt.get();
-            if (!course.getTeacherId().equals(teacherId)) {
-                return ApiResponse.error("You don't have permission to add lessons to this module");
-            }
-
-            // Check if lesson title already exists in this module
-            if (lessonRepository.existsByModuleIdAndTitleIgnoreCase(moduleId, request.getTitle())) {
-                return ApiResponse.error("A lesson with this title already exists in this module");
-            }
-
-            // Check if lesson order already exists in this module
-            if (lessonRepository.existsByModuleIdAndOrder(moduleId, request.getOrder())) {
-                return ApiResponse.error("A lesson with this order already exists in this module");
-            }
-
-            // Create lesson
+            // Build lesson with proper quiz mapping
             Lesson lesson = Lesson.builder()
                     .title(request.getTitle().trim())
                     .description(request.getDescription().trim())
@@ -69,39 +45,30 @@ public class LessonService {
                     .duration(request.getDuration().trim())
                     .order(request.getOrder())
                     .moduleId(moduleId)
-                    .courseId(module.getCourseId())
-                    .teacherId(teacherId)
                     .status(Lesson.LessonStatus.DRAFT)
                     .coverImage(request.getCoverImage())
                     .transcript(request.getTranscript())
                     .tags(request.getTags())
                     .difficulty(request.getDifficulty())
                     .language(request.getLanguage())
-                    .quizzes(request.getQuizzes() != null ?
-                            request.getQuizzes().stream()
-                                    .map(this::mapToQuiz)
-                                    .collect(Collectors.toList()) : null)
+                    .quizzes(mapQuizRequests(request.getQuizzes())) // Fix quiz mapping
+                    .views(0)
+                    .averageRating(0.0)
+                    .totalRatings(0)
+                    .isActive(true)
                     .createdAt(LocalDateTime.now())
                     .build();
 
-            // Extract video thumbnail if YouTube URL
-            String thumbnail = extractYouTubeThumbnail(request.getVideoUrl());
-            if (thumbnail != null) {
-                lesson.setVideoThumbnail(thumbnail);
-            }
-
-            // Save lesson
             Lesson savedLesson = lessonRepository.save(lesson);
             log.info("Lesson created successfully with ID: {}", savedLesson.getId());
 
             // Update module lesson count
-            updateModuleLessonCount(moduleId);
+            moduleService.incrementLessonCount(moduleId);
 
-            LessonResponse response = LessonResponse.fromLesson(savedLesson);
-            return ApiResponse.success("Lesson created successfully", response);
+            return ApiResponse.success(LessonResponse.fromLesson(savedLesson));
 
         } catch (Exception e) {
-            log.error("Failed to create lesson for module: {}", moduleId, e);
+            log.error("Error creating lesson: ", e);
             return ApiResponse.error("Failed to create lesson: " + e.getMessage());
         }
     }
@@ -161,86 +128,56 @@ public class LessonService {
     }
 
     @Transactional
-    public ApiResponse<LessonResponse> updateLesson(String lessonId, LessonUpdateRequest request, String teacherId) {
+    public ApiResponse<LessonResponse> updateLesson(String lessonId, LessonUpdateRequest request) {
         try {
-            log.info("Updating lesson: {} by teacher: {}", lessonId, teacherId);
+            log.info("Updating lesson: {}", lessonId);
 
-            Optional<Lesson> lessonOpt = lessonRepository.findById(lessonId);
-            if (lessonOpt.isEmpty()) {
+            Optional<Lesson> optionalLesson = lessonRepository.findById(lessonId);
+            if (optionalLesson.isEmpty()) {
                 return ApiResponse.error("Lesson not found");
             }
 
-            Lesson lesson = lessonOpt.get();
+            Lesson lesson = optionalLesson.get();
 
-            // Verify lesson belongs to teacher
-            if (!lesson.getTeacherId().equals(teacherId)) {
-                return ApiResponse.error("You don't have permission to update this lesson");
-            }
-
-            // Update fields if provided
-            if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
-                // Check if new title conflicts with existing lessons in the module
-                if (!lesson.getTitle().equalsIgnoreCase(request.getTitle()) &&
-                        lessonRepository.existsByModuleIdAndTitleIgnoreCase(lesson.getModuleId(), request.getTitle())) {
-                    return ApiResponse.error("A lesson with this title already exists in this module");
-                }
+            // Update lesson fields
+            if (request.getTitle() != null) {
                 lesson.setTitle(request.getTitle().trim());
             }
-
-            if (request.getDescription() != null && !request.getDescription().trim().isEmpty()) {
+            if (request.getDescription() != null) {
                 lesson.setDescription(request.getDescription().trim());
             }
-
-            if (request.getVideoUrl() != null && !request.getVideoUrl().trim().isEmpty()) {
+            if (request.getVideoUrl() != null) {
                 lesson.setVideoUrl(request.getVideoUrl().trim());
-                // Update thumbnail
-                String thumbnail = extractYouTubeThumbnail(request.getVideoUrl());
-                if (thumbnail != null) {
-                    lesson.setVideoThumbnail(thumbnail);
-                }
             }
-
-            if (request.getDuration() != null && !request.getDuration().trim().isEmpty()) {
+            if (request.getDuration() != null) {
                 lesson.setDuration(request.getDuration().trim());
             }
-
             if (request.getOrder() != null) {
-                // Check if new order conflicts with existing lessons in the module
-                if (!lesson.getOrder().equals(request.getOrder()) &&
-                        lessonRepository.existsByModuleIdAndOrder(lesson.getModuleId(), request.getOrder())) {
-                    return ApiResponse.error("A lesson with this order already exists in this module");
-                }
                 lesson.setOrder(request.getOrder());
             }
-
             if (request.getStatus() != null) {
                 lesson.setStatus(request.getStatus());
             }
-
             if (request.getCoverImage() != null) {
                 lesson.setCoverImage(request.getCoverImage());
             }
-
             if (request.getTranscript() != null) {
                 lesson.setTranscript(request.getTranscript());
             }
-
             if (request.getTags() != null) {
                 lesson.setTags(request.getTags());
             }
-
             if (request.getDifficulty() != null) {
                 lesson.setDifficulty(request.getDifficulty());
             }
-
             if (request.getLanguage() != null) {
                 lesson.setLanguage(request.getLanguage());
             }
-
+            
+            // Update quizzes - this is crucial
             if (request.getQuizzes() != null) {
-                lesson.setQuizzes(request.getQuizzes().stream()
-                        .map(this::mapToQuiz)
-                        .collect(Collectors.toList()));
+                lesson.setQuizzes(mapQuizRequests(request.getQuizzes()));
+                log.info("Updated {} quizzes for lesson {}", request.getQuizzes().size(), lessonId);
             }
 
             lesson.setUpdatedAt(LocalDateTime.now());
@@ -248,11 +185,10 @@ public class LessonService {
             Lesson updatedLesson = lessonRepository.save(lesson);
             log.info("Lesson updated successfully: {}", lessonId);
 
-            LessonResponse response = LessonResponse.fromLesson(updatedLesson);
-            return ApiResponse.success("Lesson updated successfully", response);
+            return ApiResponse.success(LessonResponse.fromLesson(updatedLesson));
 
         } catch (Exception e) {
-            log.error("Failed to update lesson: {}", lessonId, e);
+            log.error("Error updating lesson: ", e);
             return ApiResponse.error("Failed to update lesson: " + e.getMessage());
         }
     }
@@ -518,5 +454,39 @@ public class LessonService {
             log.error("Failed to unpublish lesson: {}", lessonId, e);
             return ApiResponse.error("Failed to unpublish lesson: " + e.getMessage());
         }
+    }
+
+    // Helper method to map quiz requests
+    private List<Lesson.Quiz> mapQuizRequests(List<QuizRequest> quizRequests) {
+        if (quizRequests == null || quizRequests.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return quizRequests.stream()
+                .filter(Objects::nonNull)
+                .map(this::mapToQuiz)
+                .collect(Collectors.toList());
+    }
+
+    // Enhanced quiz mapping with better validation
+    private Lesson.Quiz mapToQuiz(QuizRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        return Lesson.Quiz.builder()
+                .id(UUID.randomUUID().toString())
+                .question(request.getQuestion() != null ? request.getQuestion().trim() : "")
+                .options(request.getOptions() != null ? 
+                    request.getOptions().stream()
+                        .filter(Objects::nonNull)
+                        .map(String::trim)
+                        .filter(option -> !option.isEmpty())
+                        .collect(Collectors.toList()) : new ArrayList<>())
+                .correctAnswer(request.getCorrectAnswer() != null ? request.getCorrectAnswer() : 0)
+                .explanation(request.getExplanation() != null ? request.getExplanation().trim() : "")
+                .points(request.getPoints() != null ? request.getPoints() : 1)
+                .type(request.getType() != null ? request.getType() : Lesson.Quiz.QuizType.MULTIPLE_CHOICE)
+                .build();
     }
 }

@@ -260,6 +260,126 @@ class ApiService {
     return this.handleResponse(response);
   }
 
+  // =================== LESSON APIs ===================
+
+  /**
+   * Create a new lesson for a module
+   */
+  static async createLesson(moduleId, lessonData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lessons/modules/${moduleId}`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(lessonData),
+      });
+      return this.handleResponse(response);
+    } catch (error) {
+      console.error('Create lesson error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all lessons for a module
+   */
+  static async getLessonsByModule(moduleId) {
+    const response = await fetch(`${API_BASE_URL}/lessons/modules/${moduleId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Get a specific lesson by ID
+   */
+  static async getLessonById(lessonId) {
+    const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Update a lesson
+   */
+  static async updateLesson(lessonId, lessonData) {
+    const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(lessonData),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Delete a lesson
+   */
+  static async deleteLesson(lessonId) {
+    const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Search lessons in a course
+   */
+  static async searchLessons(courseId, searchTerm) {
+    const response = await fetch(`${API_BASE_URL}/lessons/search?courseId=${courseId}&searchTerm=${encodeURIComponent(searchTerm)}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Get lesson statistics for teacher
+   */
+  static async getLessonStats() {
+    const response = await fetch(`${API_BASE_URL}/lessons/stats`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Reorder lessons in a module
+   */
+  static async reorderLessons(moduleId, lessonIds) {
+    const response = await fetch(`${API_BASE_URL}/lessons/modules/${moduleId}/reorder`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ lessonIds }),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Publish a lesson
+   */
+  static async publishLesson(lessonId) {
+    const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/publish`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Unpublish a lesson
+   */
+  static async unpublishLesson(lessonId) {
+    const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/unpublish`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
   // Teacher Profile APIs
   static async getTeacherProfile(teacherId) {
     const response = await fetch(`${API_BASE_URL}/teacher/profile/${teacherId}`, {
