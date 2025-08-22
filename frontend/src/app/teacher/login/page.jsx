@@ -74,7 +74,8 @@ const TeacherLogin = () => {
 
       if (result.success) {
         // Store token and teacher data
-        localStorage.setItem('teacherToken', result.data.token);
+        localStorage.setItem('token', result.data.token);
+        localStorage.setItem('userType', 'teacher');
         localStorage.setItem('teacherData', JSON.stringify(result.data.teacher));
         
         // Redirect to teacher dashboard

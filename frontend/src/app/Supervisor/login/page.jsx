@@ -72,7 +72,8 @@ const SupervisorLogin = () => {
 
       if (result.success) {
         // Store token in localStorage or secure storage
-        localStorage.setItem('supervisorToken', result.data.token);
+        localStorage.setItem('token', result.data.token);
+        localStorage.setItem('userType', 'supervisor');
         localStorage.setItem('supervisorData', JSON.stringify(result.data.supervisor));
         
         // Redirect to dashboard

@@ -112,8 +112,12 @@ const CreateCoursePage = () => {
         ...courseData,
         price: courseData.price ? parseFloat(courseData.price) : 0,
         learningObjectives: courseData.learningObjectives.filter(obj => obj.trim()),
-        prerequisites: courseData.prerequisites || []
+        prerequisites: courseData.prerequisites
+            ? courseData.prerequisites.split('\n').map(p => p.trim()).filter(p => p.length > 0)
+            : []
       };
+
+      console.log('Course payload:', coursePayload);
 
       // Call API to create course
       const response = await ApiService.createCourse(coursePayload);
@@ -380,13 +384,16 @@ const CreateCoursePage = () => {
                 Prerequisites
               </label>
               <textarea
-                name="prerequisites"
-                value={courseData.prerequisites}
-                onChange={handleInputChange}
-                rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent"
-                placeholder="What should students know before taking this course? (Optional)"
+                  name="prerequisites"
+                  value={courseData.prerequisites}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent"
+                  placeholder="Enter each prerequisite on a new line (Optional)&#10;Example:&#10;Basic English knowledge&#10;High school education"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter each prerequisite on a separate line
+              </p>
             </div>
           </motion.div>
         )}

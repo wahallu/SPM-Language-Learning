@@ -160,9 +160,9 @@ class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Set role based on user type
                 String role = switch (userType) {
-                    case "SUPERVISOR" -> "ROLE_SUPERVISOR";
-                    case "TEACHER" -> "ROLE_TEACHER";
-                    case "USER" -> "ROLE_USER";
+                    case "SUPERVISOR", "supervisor" -> "ROLE_SUPERVISOR";
+                    case "TEACHER", "teacher" -> "ROLE_TEACHER";
+                    case "USER", "user" -> "ROLE_USER";
                     default -> "ROLE_USER";
                 };
 
