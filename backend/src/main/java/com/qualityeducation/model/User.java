@@ -2,7 +2,7 @@ package com.qualityeducation.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Document(collection = "users")
 public class User {
@@ -15,9 +15,14 @@ public class User {
     private String languageKnown;
     private String resetToken;
     private Long resetTokenExpiry;
+    private String role; // Add role field
+    private LocalDateTime createdAt; // Add createdAt field
+    private LocalDateTime updatedAt; // Add updatedAt field
 
     // Constructors
     public User() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public User(String username, String email, String password, String languageToLearn, String languageKnown) {
@@ -26,6 +31,9 @@ public class User {
         this.password = password;
         this.languageToLearn = languageToLearn;
         this.languageKnown = languageKnown;
+        this.role = "STUDENT"; // Default role
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     // Getters and setters
@@ -91,5 +99,29 @@ public class User {
 
     public void setResetTokenExpiry(Long resetTokenExpiry) {
         this.resetTokenExpiry = resetTokenExpiry;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

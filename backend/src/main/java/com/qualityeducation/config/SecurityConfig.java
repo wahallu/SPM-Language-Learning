@@ -48,6 +48,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/supervisor/register", "/api/supervisor/login").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/student/**").authenticated()
                 .requestMatchers("/api/supervisor/**").authenticated()
                 .anyRequest().permitAll()
             )
