@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e00aec69-5bee-4c72-8ecb-0b76e60f4ada" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/UserLoginResponse$UserLoginResponseBuilder.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/UserLoginResponse.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/UserResponse$UserResponseBuilder.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/UserResponse$UserStatus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/UserResponse.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/User$UserBuilder.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/User$UserStatus.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/QualityeducationApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/QualityeducationApplication.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/config/JwtAuthenticationFilter.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/config/JwtAuthenticationFilter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/config/SecurityConfig$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/config/SecurityConfig$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/config/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/config/SecurityConfig.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/AuthController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/AuthController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/CourseController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/CourseController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/LessonController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/LessonController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/ModuleController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/ModuleController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/StudentController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/StudentController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/SupervisorController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/SupervisorController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/TeacherController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/controller/TeacherController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ActivityResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ActivityResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ApiResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ApiResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/AuthResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/AuthResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ChangePasswordRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ChangePasswordRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/CourseRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/CourseRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/CourseResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/CourseResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/DashboardStatsResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/DashboardStatsResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ForgotPasswordRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ForgotPasswordRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonResponse$LessonResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonResponse$LessonResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonStatsResponse$LessonStatsResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonStatsResponse$LessonStatsResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonStatsResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonStatsResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonSummaryResponse$LessonSummaryResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonSummaryResponse$LessonSummaryResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonSummaryResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonSummaryResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonUpdateRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LessonUpdateRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LoginRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/LoginRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleReorderRequest$ModuleOrderItem.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleReorderRequest$ModuleOrderItem.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleReorderRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleReorderRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleResponse$ModuleResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleResponse$ModuleResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleUpdateRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleUpdateRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleWithLessonsResponse$ModuleWithLessonsResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleWithLessonsResponse$ModuleWithLessonsResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleWithLessonsResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ModuleWithLessonsResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/PendingReviewResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/PendingReviewResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/QuizRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/QuizRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/QuizResponse$QuizResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/QuizResponse$QuizResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/QuizResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/QuizResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/RegistrationRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/RegistrationRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ResetPasswordRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/ResetPasswordRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentActivityResponse$StudentActivityResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentActivityResponse$StudentActivityResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentActivityResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentActivityResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentProfileResponse$StudentProfileResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentProfileResponse$StudentProfileResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentProfileResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentProfileResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentStatsResponse$StudentStatsResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentStatsResponse$StudentStatsResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentStatsResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/StudentStatsResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorActivityResponse$SupervisorActivityResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorActivityResponse$SupervisorActivityResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorActivityResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorActivityResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorLoginRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorLoginRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorLoginResponse$SupervisorLoginResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorLoginResponse$SupervisorLoginResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorLoginResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorLoginResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorRegistrationRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorRegistrationRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorResponse$SupervisorResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorResponse$SupervisorResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorStatsResponse$SupervisorStatsResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorStatsResponse$SupervisorStatsResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorStatsResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorStatsResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorUpdateRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/SupervisorUpdateRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherLoginRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherLoginRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherLoginResponse$TeacherLoginResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherLoginResponse$TeacherLoginResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherLoginResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherLoginResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherRegistrationRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherRegistrationRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherResponse$TeacherResponseBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherResponse$TeacherResponseBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherResponse$TeacherStatus.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherResponse$TeacherStatus.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/dto/TeacherResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Course.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Course.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$LessonBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$LessonBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$LessonStatus.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$LessonStatus.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$Quiz$QuizBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$Quiz$QuizBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$Quiz$QuizType.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$Quiz$QuizType.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$Quiz.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson$Quiz.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Lesson.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Module$ModuleBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Module$ModuleBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Module$ModuleStatus.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Module$ModuleStatus.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Module.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Module.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Supervisor$SupervisorRole.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Supervisor$SupervisorRole.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Supervisor$SupervisorStatus.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Supervisor$SupervisorStatus.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Supervisor.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Supervisor.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Teacher$TeacherBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Teacher$TeacherBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Teacher$TeacherStatus.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Teacher$TeacherStatus.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Teacher.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/Teacher.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/model/User.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/CourseRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/CourseRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/LessonRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/LessonRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/ModuleRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/ModuleRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/SupervisorRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/SupervisorRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/TeacherRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/TeacherRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/repository/UserRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/AuthService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/AuthService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/CourseService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/CourseService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/EmailService$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/EmailService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/EmailService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/JwtService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/JwtService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/LessonService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/LessonService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/ModuleService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/ModuleService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/StudentService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/StudentService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/SupervisorService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/SupervisorService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/TeacherService$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/TeacherService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/qualityeducation/service/TeacherService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/Components/auth/LoginForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/Components/auth/LoginForm.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/utils/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/utils/api.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="31gdrsN2YydGX1CtMo4pQ5Gao4p" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.QualityeducationApplication.executor": "Run",
+    "git-widget-placeholder": "Akash",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/akazjaya/Documents/SLIIT/Y3S2/SPM/Project/SPM-Language-Learning",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="QualityeducationApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="qualityeducation" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.qualityeducation.QualityeducationApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
+        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-IU-252.23892.409" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e00aec69-5bee-4c72-8ecb-0b76e60f4ada" name="Changes" comment="" />
+      <created>1755949851863</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1755949851863</updated>
+      <workItem from="1755949852924" duration="1066000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
