@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
 import Image from 'next/image';
+import {useRouter} from "next/navigation";
 
 const TeacherDashboard = () => {
   const [courses, setCourses] = useState([
@@ -34,6 +35,7 @@ const TeacherDashboard = () => {
       createdAt: "2024-02-01"
     }
   ]);
+  const router = useRouter();
 
   const stats = {
     totalCourses: courses.length,
@@ -41,6 +43,17 @@ const TeacherDashboard = () => {
     publishedCourses: courses.filter(course => course.status === 'published').length,
     draftCourses: courses.filter(course => course.status === 'draft').length
   };
+
+  useEffect(() => {
+    // Ensure we have proper authentication
+    const token = localStorage.getItem('token');
+    const userType = localStorage.getItem('userType');
+
+    if (!token || userType !== 'teacher') {
+      // Redirect to login if not properly authenticated
+      router.push('/teacher/login');
+    }
+  }, []);
 
   return (
     <div className="space-y-8">
