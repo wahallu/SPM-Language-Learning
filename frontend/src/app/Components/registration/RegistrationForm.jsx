@@ -108,42 +108,44 @@ const RegistrationForm = ({ selectedLanguages, onBack }) => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    username: formData.name, // Using name as username
+                    username: formData.name,
                     email: formData.email,
                     password: formData.password,
                     languageToLearn: selectedLanguages.learn.code,
                     languageKnown: selectedLanguages.know.code
                 }),
             });
-            
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.message || 'Registration failed');
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Store comprehensive user data
+                localStorage.setItem('authToken', result.data.token);
+                localStorage.setItem('userType', 'student');
+                localStorage.setItem('userData', JSON.stringify(result.data.user));
+
+                // Also store individual items for backward compatibility
+                localStorage.setItem('userId', result.data.user.id);
+                localStorage.setItem('username', result.data.user.username);
+                localStorage.setItem('learningLanguage', result.data.user.languageToLearn);
+                localStorage.setItem('knownLanguage', result.data.user.languageKnown);
+
+                // Redirect to student dashboard
+                router.push('/student');
+
+            } else {
+                if (result.message && result.message.includes('Email already registered')) {
+                    setErrors(prev => ({ ...prev, email: 'This email is already registered' }));
+                } else if (result.message && result.message.includes('Username already taken')) {
+                    setErrors(prev => ({ ...prev, name: 'This username is already taken' }));
+                } else {
+                    setErrors({ submit: result.message || 'Registration failed. Please try again.' });
+                }
             }
-            
-            // Store auth token in localStorage or cookies
-            localStorage.setItem('authToken', data.token);
-            localStorage.setItem('userId', data.userId);
-            localStorage.setItem('username', data.username);
-            
-            // Store additional user preferences if needed
-            localStorage.setItem('learningLanguage', selectedLanguages.learn.code);
-            localStorage.setItem('knownLanguage', selectedLanguages.know.code);
-            
-            // Redirect to student dashboard
-            router.push('/courses');
 
         } catch (error) {
             console.error('Registration failed:', error);
-            // Set appropriate error message
-            if (error.message.includes('Email already registered')) {
-                setErrors(prev => ({ ...prev, email: 'This email is already registered' }));
-            } else if (error.message.includes('Username already taken')) {
-                setErrors(prev => ({ ...prev, name: 'This username is already taken' }));
-            } else {
-                alert('Registration failed. Please try again.');
-            }
+            setErrors({ submit: 'Registration failed. Please try again.' });
         } finally {
             setIsLoading(false);
         }
@@ -311,8 +313,8 @@ const RegistrationForm = ({ selectedLanguages, onBack }) => {
                                     type="button"
                                     onClick={() => setFormData(prev => ({ ...prev, goal: goal.id }))}
                                     className={`p-4 border rounded-xl text-left transition-all hover:scale-105 ${formData.goal === goal.id
-                                            ? 'border-[#FF7D29] bg-orange-50 ring-2 ring-[#FF7D29]'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                        ? 'border-[#FF7D29] bg-orange-50 ring-2 ring-[#FF7D29]'
+                                        : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
@@ -339,8 +341,8 @@ const RegistrationForm = ({ selectedLanguages, onBack }) => {
                                     type="button"
                                     onClick={() => setFormData(prev => ({ ...prev, experience: level.id }))}
                                     className={`w-full p-4 border rounded-xl text-left transition-all hover:scale-105 ${formData.experience === level.id
-                                            ? 'border-[#FF7D29] bg-orange-50 ring-2 ring-[#FF7D29]'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                        ? 'border-[#FF7D29] bg-orange-50 ring-2 ring-[#FF7D29]'
+                                        : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                     whileHover={{ scale: 1.01 }}
                                     whileTap={{ scale: 0.99 }}

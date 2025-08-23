@@ -109,6 +109,10 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
         claims.put("userType", "student");
+        claims.put("firstName", user.getFirstName());
+        claims.put("lastName", user.getLastName());
+        claims.put("currentLevel", user.getCurrentLevel());
+        claims.put("totalXP", user.getTotalXP());
         return createToken(claims, user.getEmail());
     }
 
@@ -192,6 +196,17 @@ public class JwtService {
             return claims.get("teacherId", String.class);
         } catch (Exception e) {
             log.error("Failed to extract teacher ID from token: {}", e.getMessage());
+            throw new RuntimeException("Invalid token");
+        }
+    }
+
+    // Method to extract user ID from token
+    public String extractUserId(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return claims.get("userId", String.class);
+        } catch (Exception e) {
+            log.error("Failed to extract user ID from token: {}", e.getMessage());
             throw new RuntimeException("Invalid token");
         }
     }

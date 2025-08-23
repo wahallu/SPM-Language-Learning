@@ -3,94 +3,149 @@ package com.qualityeducation.service;
 import com.qualityeducation.dto.*;
 import com.qualityeducation.model.User;
 import com.qualityeducation.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.time.Instant;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class AuthService {
-    @Autowired
-    private UserRepository userRepository;
     
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final EmailService emailService;
+    private final AuthenticationManager authenticationManager;
     
-    @Autowired
-    private JwtService jwtService;
-    
-    @Autowired
-    private EmailService emailService;
-    
-    public AuthResponse register(RegistrationRequest request) {
-        // Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return new AuthResponse("Email already registered");
+    public ApiResponse<UserLoginResponse> register(RegistrationRequest request) {
+        try {
+            log.info("Attempting to register user with email: {}", request.getEmail());
+            
+            // Check if email already exists
+            if (userRepository.existsByEmail(request.getEmail())) {
+                return ApiResponse.error("Email already registered", null);
+            }
+            
+            // Check if username already exists
+            if (userRepository.existsByUsername(request.getUsername())) {
+                return ApiResponse.error("Username already taken", null);
+            }
+            
+            // Create new user
+            User user = User.builder()
+                    .username(request.getUsername())
+                    .email(request.getEmail())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .languageToLearn(request.getLanguageToLearn())
+                    .languageKnown(request.getLanguageKnown())
+                    .role("STUDENT")
+                    .currentLevel(1)
+                    .totalXP(0)
+                    .currentStreak(0)
+                    .build();
+            
+            User savedUser = userRepository.save(user);
+            log.info("User registered successfully with ID: {}", savedUser.getId());
+            
+            // Generate JWT token
+            String token = jwtService.generateToken(savedUser);
+            
+            // Create response
+            UserResponse userResponse = convertToResponse(savedUser);
+            UserLoginResponse loginResponse = UserLoginResponse.builder()
+                    .token(token)
+                    .user(userResponse)
+                    .build();
+            
+            return ApiResponse.success("Registration successful", loginResponse);
+            
+        } catch (Exception e) {
+            log.error("User registration failed for email: {}", request.getEmail(), e);
+            return ApiResponse.error("Registration failed: " + e.getMessage(), null);
         }
-        
-        // Check if username already exists
-        if (userRepository.existsByUsername(request.getUsername())) {
-            return new AuthResponse("Username already taken");
-        }
-        
-        // Create new user
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setLanguageToLearn(request.getLanguageToLearn());
-        user.setLanguageKnown(request.getLanguageKnown());
-        user.setRole("STUDENT"); // Set default role as STUDENT
-        
-        user = userRepository.save(user);
-        
-        // Generate JWT token
-        String token = jwtService.generateToken(user);
-        
-        return new AuthResponse(token, user.getId(), user.getUsername(), user.getRole().toString(), "Registration successful");
     }
     
-    public AuthResponse login(LoginRequest request) {
-        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
-        
-        if (userOpt.isEmpty()) {
-            return new AuthResponse("Invalid email or password");
+    public ApiResponse<UserLoginResponse> login(LoginRequest request) {
+        try {
+            log.info("Attempting user login for email: {}", request.getEmail());
+            
+            // Find user by email
+            Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+            if (userOptional.isEmpty()) {
+                return ApiResponse.error("Invalid email or password", null);
+            }
+            
+            User user = userOptional.get();
+            
+            // Check if user is active
+            if (user.getStatus() != User.UserStatus.ACTIVE) {
+                String message = switch (user.getStatus()) {
+                    case INACTIVE -> "Your account is inactive. Please contact support.";
+                    case SUSPENDED -> "Your account has been suspended. Please contact support.";
+                    default -> "Your account is not active. Please contact support.";
+                };
+                return ApiResponse.error(message, null);
+            }
+            
+            // Authenticate user
+            try {
+                Authentication authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+                
+                // Update last login time
+                user.setLastLoginAt(LocalDateTime.now());
+                userRepository.save(user);
+                
+                // Generate JWT token
+                String token = jwtService.generateToken(user);
+                
+                // Create response
+                UserResponse userResponse = convertToResponse(user);
+                UserLoginResponse loginResponse = UserLoginResponse.builder()
+                        .token(token)
+                        .user(userResponse)
+                        .build();
+                
+                log.info("User login successful for email: {}", request.getEmail());
+                return ApiResponse.success("Login successful", loginResponse);
+                
+            } catch (AuthenticationException e) {
+                log.warn("Authentication failed for user email: {}", request.getEmail());
+                return ApiResponse.error("Invalid email or password", null);
+            }
+            
+        } catch (Exception e) {
+            log.error("User login failed for email: {}", request.getEmail(), e);
+            return ApiResponse.error("Login failed: " + e.getMessage(), null);
         }
-        
-        User user = userOpt.get();
-        
-        // Verify password
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return new AuthResponse("Invalid email or password");
-        }
-        
-        // Generate JWT token
-        String token = jwtService.generateToken(user);
-        
-        return new AuthResponse(token, user.getId(), user.getUsername(), user.getRole().toString(), "Login successful");
     }
     
     public AuthResponse forgotPassword(ForgotPasswordRequest request) {
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         
         if (userOpt.isEmpty()) {
-            // Don't reveal that email doesn't exist for security reasons
             return new AuthResponse("If your email is registered, you will receive a password reset link");
         }
         
         User user = userOpt.get();
         
-        // Generate reset token
         String resetToken = UUID.randomUUID().toString();
         user.setResetToken(resetToken);
-        user.setResetTokenExpiry(Instant.now().plusSeconds(3600).getEpochSecond()); // Token valid for 1 hour
+        user.setResetTokenExpiry(Instant.now().plusSeconds(3600).getEpochSecond());
         
         userRepository.save(user);
         
-        // Send email with reset link
         String resetLink = "http://localhost:3000/reset-password?token=" + resetToken;
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
         
@@ -106,12 +161,10 @@ public class AuthService {
         
         User user = userOpt.get();
         
-        // Check if token has expired
         if (user.getResetTokenExpiry() < Instant.now().getEpochSecond()) {
             return new AuthResponse("Token has expired");
         }
         
-        // Update password
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
@@ -119,5 +172,27 @@ public class AuthService {
         userRepository.save(user);
         
         return new AuthResponse("Password has been reset successfully");
+    }
+    
+    private UserResponse convertToResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .languageToLearn(user.getLanguageToLearn())
+                .languageKnown(user.getLanguageKnown())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .lastLoginAt(user.getLastLoginAt())
+                .profileImage(user.getProfileImage())
+                .bio(user.getBio())
+                .currentLevel(user.getCurrentLevel())
+                .totalXP(user.getTotalXP())
+                .currentStreak(user.getCurrentStreak())
+                .status(UserResponse.UserStatus.valueOf(user.getStatus().name()))
+                .build();
     }
 }

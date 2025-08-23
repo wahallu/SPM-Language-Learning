@@ -1,127 +1,99 @@
 package com.qualityeducation.model;
 
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.time.LocalDateTime;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "users")
-public class User {
+public class User implements UserDetails {
+    
     @Id
     private String id;
+    
+    private String firstName;
+    private String lastName;
     private String username;
+    
+    @Indexed(unique = true)
     private String email;
+    
     private String password;
     private String languageToLearn;
     private String languageKnown;
     private String resetToken;
     private Long resetTokenExpiry;
-    private String role; // Add role field
-    private LocalDateTime createdAt; // Add createdAt field
-    private LocalDateTime updatedAt; // Add updatedAt field
-
-    // Constructors
-    public User() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    
+    @Builder.Default
+    private String role = "STUDENT";
+    
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+    
+    private LocalDateTime updatedAt;
+    private LocalDateTime lastLoginAt;
+    
+    // Profile fields
+    private String profileImage;
+    private String bio;
+    private Integer currentLevel;
+    private Integer totalXP;
+    private Integer currentStreak;
+    
+    @Builder.Default
+    private boolean enabled = true;
+    
+    @Builder.Default
+    private boolean accountNonExpired = true;
+    
+    @Builder.Default
+    private boolean accountNonLocked = true;
+    
+    @Builder.Default
+    private boolean credentialsNonExpired = true;
+    
+    public enum UserStatus {
+        ACTIVE,
+        INACTIVE,
+        SUSPENDED
     }
-
-    public User(String username, String email, String password, String languageToLearn, String languageKnown) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.languageToLearn = languageToLearn;
-        this.languageKnown = languageKnown;
-        this.role = "STUDENT"; // Default role
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    
+    @Builder.Default
+    private UserStatus status = UserStatus.ACTIVE;
+    
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
     }
-
-    // Getters and setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
+    
+    @Override
     public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
         return email;
     }
-
-    public void setEmail(String email) {
-        this.email = email;
+    
+    @Override
+    public boolean isEnabled() {
+        return enabled && status == UserStatus.ACTIVE;
     }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getLanguageToLearn() {
-        return languageToLearn;
-    }
-
-    public void setLanguageToLearn(String languageToLearn) {
-        this.languageToLearn = languageToLearn;
-    }
-
-    public String getLanguageKnown() {
-        return languageKnown;
-    }
-
-    public void setLanguageKnown(String languageKnown) {
-        this.languageKnown = languageKnown;
-    }
-
-    public String getResetToken() {
-        return resetToken;
-    }
-
-    public void setResetToken(String resetToken) {
-        this.resetToken = resetToken;
-    }
-
-    public Long getResetTokenExpiry() {
-        return resetTokenExpiry;
-    }
-
-    public void setResetTokenExpiry(Long resetTokenExpiry) {
-        this.resetTokenExpiry = resetTokenExpiry;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    
+    public String getFullName() {
+        if (firstName != null && lastName != null) {
+            return firstName + " " + lastName;
+        }
+        return username;
     }
 }

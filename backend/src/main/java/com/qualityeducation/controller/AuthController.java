@@ -4,7 +4,10 @@ import com.qualityeducation.dto.*;
 import com.qualityeducation.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -15,13 +18,49 @@ public class AuthController {
     private AuthService authService;
     
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegistrationRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    public ResponseEntity<ApiResponse<UserLoginResponse>> register(
+            @Valid @RequestBody RegistrationRequest request,
+            BindingResult bindingResult) {
+        
+        if (bindingResult.hasErrors()) {
+            String errors = bindingResult.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Validation failed", errors));
+        }
+        
+        ApiResponse<UserLoginResponse> response = authService.register(request);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
     
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<ApiResponse<UserLoginResponse>> login(
+            @Valid @RequestBody LoginRequest request,
+            BindingResult bindingResult) {
+        
+        if (bindingResult.hasErrors()) {
+            String errors = bindingResult.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Validation failed", errors));
+        }
+        
+        ApiResponse<UserLoginResponse> response = authService.login(request);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
     
     @PostMapping("/forgot-password")
