@@ -90,10 +90,10 @@ const Header = () => {
                           Dashboard
                         </Link>
                         <Link
-                          href="/student/settings"
+                          href="/student/profile"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
-                          Settings
+                          Profile
                         </Link>
                       </div>
                       <div className="border-t border-gray-200 py-2">

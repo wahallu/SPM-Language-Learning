@@ -19,44 +19,14 @@ const StudentSidebar = () => {
     {
       icon: '📚',
       label: 'My Courses',
-      href: '/student/courses',
-      active: pathname.startsWith('/student/courses')
+      href: '/student/mycourses',
+      active: pathname === '/student/mycourses'
     },
     {
-      icon: '🔍',
-      label: 'Browse Courses',
-      href: '/student/browse',
-      active: pathname === '/student/browse'
-    },
-    {
-      icon: '📊',
-      label: 'Progress',
-      href: '/student/progress',
-      active: pathname === '/student/progress'
-    },
-    {
-      icon: '🏆',
-      label: 'Achievements',
-      href: '/student/achievements',
-      active: pathname === '/student/achievements'
-    },
-    {
-      icon: '📝',
-      label: 'Practice',
-      href: '/student/practice',
-      active: pathname === '/student/practice'
-    },
-    {
-      icon: '👥',
-      label: 'Community',
-      href: '/student/community',
-      active: pathname === '/student/community'
-    },
-    {
-      icon: '⚙️',
-      label: 'Settings',
-      href: '/student/settings',
-      active: pathname === '/student/settings'
+      icon: '📖',
+      label: 'Lessons',
+      href: '/lessons',
+      active: pathname === '/lessons'
     }
   ];
 
@@ -73,11 +43,12 @@ const StudentSidebar = () => {
       className={`fixed left-0 h-[calc(100vh-4rem)] bg-white shadow-lg transition-all duration-300 z-40 ${
         isCollapsed ? 'w-16' : 'w-64'
       }`}
-      initial={{ x: -100, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
+      style={{ top: '4rem' }}
+      initial={{ x: -100 }}
+      animate={{ x: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Collapse Toggle */}
+      {/* Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="absolute -right-3 top-4 w-6 h-6 bg-[#FF7D29] text-white rounded-full flex items-center justify-center hover:bg-[#FF9D5C] transition-colors"
@@ -97,50 +68,32 @@ const StudentSidebar = () => {
             SJ
           </div>
           {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-800 truncate">{student.name}</p>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-yellow-500">⭐</span>
-                <span className="text-gray-600">Level {student.level}</span>
-              </div>
+            <div>
+              <p className="font-semibold text-gray-800">{student.name}</p>
+              <p className="text-sm text-gray-600">Level {student.level}</p>
             </div>
           )}
         </div>
         
+        {/* Progress Bar */}
         {!isCollapsed && (
-          <motion.div
-            className="mt-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            {/* Streak Counter */}
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-1">
-                <span className="text-orange-500">🔥</span>
-                <span className="text-sm text-gray-600">{student.currentStreak} day streak</span>
-              </div>
+          <div className="mt-3">
+            <div className="flex justify-between text-xs text-gray-600 mb-1">
+              <span>Level {student.level}</span>
+              <span>{student.xpToNextLevel} XP to next level</span>
             </div>
-            
-            {/* XP Progress */}
-            <div className="mb-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-500">Level Progress</span>
-                <span className="text-xs text-gray-500">{student.xpToNextLevel} XP to go</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-[#FF7D29] to-[#FF9D5C] h-2 rounded-full transition-all duration-500"
-                  style={{ width: '75%' }}
-                />
-              </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-[#FF7D29] to-[#FF9D5C] h-2 rounded-full" 
+                style={{ width: '75%' }}
+              ></div>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
 
       {/* Navigation Menu */}
-      <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
+      <nav className="p-4 space-y-2">
         {menuItems.map((item, index) => (
           <motion.div
             key={item.href}
@@ -168,35 +121,17 @@ const StudentSidebar = () => {
         ))}
       </nav>
 
-      {/* Daily Goal */}
+      {/* Current Streak Card */}
       {!isCollapsed && (
         <motion.div
-          className="p-4 border-t border-gray-200"
+          className="absolute bottom-4 left-4 right-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-xl p-4">
-            <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-              <span>🎯</span>
-              Daily Goal
-            </h4>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">15 minutes</span>
-                <span className="text-green-600 font-medium">12/15 min</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: '80%' }}
-                />
-              </div>
-              <p className="text-xs text-gray-600">
-                Just 3 more minutes to reach your daily goal! 🌟
-              </p>
-            </div>
-          </div>
+          <h4 className="font-semibold mb-2">🔥 Current Streak</h4>
+          <div className="text-2xl font-bold">{student.currentStreak} days</div>
+          <p className="text-sm opacity-90">Keep it up!</p>
         </motion.div>
       )}
     </motion.div>
