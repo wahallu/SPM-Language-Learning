@@ -242,10 +242,10 @@ const Header = () => {
                           {isHomePage ? t('dashboard', language) : 'Dashboard'}
                         </Link>
                         <Link
-                          href="/student/settings"
+                          href="/student/profile"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
-                          {isHomePage ? t('settings', language) : 'Settings'}
+                          {isHomePage ? t('settings', language) : 'Profile'}
                         </Link>
                       </div>
                       <div className="border-t border-gray-200 py-2">

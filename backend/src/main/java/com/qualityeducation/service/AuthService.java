@@ -43,13 +43,14 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setLanguageToLearn(request.getLanguageToLearn());
         user.setLanguageKnown(request.getLanguageKnown());
+        user.setRole("STUDENT"); // Set default role as STUDENT
         
         user = userRepository.save(user);
         
         // Generate JWT token
         String token = jwtService.generateToken(user);
         
-        return new AuthResponse(token, user.getId(), user.getUsername(), "Registration successful");
+        return new AuthResponse(token, user.getId(), user.getUsername(), user.getRole().toString(), "Registration successful");
     }
     
     public AuthResponse login(LoginRequest request) {
@@ -69,7 +70,7 @@ public class AuthService {
         // Generate JWT token
         String token = jwtService.generateToken(user);
         
-        return new AuthResponse(token, user.getId(), user.getUsername(), "Login successful");
+        return new AuthResponse(token, user.getId(), user.getUsername(), user.getRole().toString(), "Login successful");
     }
     
     public AuthResponse forgotPassword(ForgotPasswordRequest request) {
