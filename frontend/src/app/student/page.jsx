@@ -1,271 +1,412 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import Link from 'next/link';
-import Image from 'next/image';
+import React, { useState, useEffect } from "react";
+import { motion } from "motion/react";
+import Link from "next/link";
+import Image from "next/image";
 
 const StudentDashboard = () => {
-  const [student] = useState({
-    name: "Sarah Johnson",
-    email: "sarah.johnson@email.com",
-    currentStreak: 7,
-    totalXP: 2450,
-    level: 5,
-    profileImage: null,
-    joinedDate: "2024-01-15",
-    learningLanguages: ["English", "Spanish"]
+  const [stats, setStats] = useState({
+    totalLessonsCompleted: 0,
+    currentStreak: 0,
+    totalXP: 0,
+    currentLevel: 1,
+    coursesEnrolled: 0,
+    coursesCompleted: 0,
+    averageScore: 0,
+    weeklyGoalProgress: 0,
   });
 
-  const [enrolledCourses] = useState([
-    {
-      id: 1,
-      title: "Beginner Basics",
-      category: "English",
-      instructor: "Dr. Maria Rodriguez",
-      image: "/images/lessons/beginner-basics.png",
-      level: "Beginner",
-      progress: 75,
-      totalLessons: 24,
-      completedLessons: 18,
-      currentModule: "Module 6: Daily Conversations",
-      nextLesson: "Ordering Food at a Restaurant",
-      estimatedTime: "8 minutes",
-      lastAccessed: "2024-03-15T14:30:00Z",
-      status: "in-progress"
-    },
-    {
-      id: 2,
-      title: "Spanish Fundamentals",
-      category: "Spanish",
-      instructor: "Prof. Carlos Martinez",
-      image: "/images/lessons/spanish-fundamentals.png",
-      level: "Beginner",
-      progress: 45,
-      totalLessons: 20,
-      completedLessons: 9,
-      currentModule: "Module 3: Grammar Basics",
-      nextLesson: "Verb Conjugations",
-      estimatedTime: "12 minutes",
-      lastAccessed: "2024-03-14T10:15:00Z",
-      status: "in-progress"
-    },
-    {
-      id: 3,
-      title: "Advanced English",
-      category: "English",
-      instructor: "Dr. Lisa Thompson",
-      image: "/images/lessons/advanced-english.png",
-      level: "Advanced",
-      progress: 100,
-      totalLessons: 30,
-      completedLessons: 30,
-      currentModule: "Course Completed",
-      nextLesson: null,
-      estimatedTime: null,
-      lastAccessed: "2024-03-10T16:45:00Z",
-      status: "completed"
-    }
-  ]);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [upcomingLessons, setUpcomingLessons] = useState([]);
+  const [achievements, setAchievements] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [studentData, setStudentData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const [recentActivity] = useState([
-    {
-      id: 1,
-      type: "lesson_completed",
-      title: "Completed: Greetings and Introductions",
-      course: "Beginner Basics",
-      timestamp: "2024-03-15T14:30:00Z",
-      xpGained: 50
-    },
-    {
-      id: 2,
-      type: "quiz_passed",
-      title: "Passed Quiz: Basic Vocabulary",
-      course: "Beginner Basics",
-      timestamp: "2024-03-15T14:15:00Z",
-      score: 85,
-      xpGained: 25
-    },
-    {
-      id: 3,
-      type: "streak_milestone",
-      title: "7-day Learning Streak!",
-      course: null,
-      timestamp: "2024-03-15T09:00:00Z",
-      xpGained: 100
-    },
-    {
-      id: 4,
-      type: "lesson_completed",
-      title: "Completed: Basic Pronunciation",
-      course: "Spanish Fundamentals",
-      timestamp: "2024-03-14T10:30:00Z",
-      xpGained: 45
-    }
-  ]);
+  useEffect(() => {
+    // Get student data from localStorage
+    const storedStudentData = JSON.parse(
+      localStorage.getItem("userData") || "{}"
+    );
+    setStudentData(storedStudentData);
 
-  const [achievements] = useState([
-    {
-      id: 1,
-      title: "First Steps",
-      description: "Complete your first lesson",
-      icon: "🎯",
-      unlocked: true,
-      unlockedDate: "2024-01-16"
-    },
-    {
-      id: 2,
-      title: "Streak Master",
-      description: "Maintain a 7-day learning streak",
-      icon: "🔥",
-      unlocked: true,
-      unlockedDate: "2024-03-15"
-    },
-    {
-      id: 3,
-      title: "Quiz Champion",
-      description: "Score 100% on 5 quizzes",
-      icon: "🏆",
-      unlocked: false,
-      progress: 3,
-      target: 5
-    },
-    {
-      id: 4,
-      title: "Course Finisher",
-      description: "Complete your first course",
-      icon: "🎓",
-      unlocked: true,
-      unlockedDate: "2024-03-10"
-    }
-  ]);
+    // Fetch dashboard data
+    fetchDashboardData();
+  }, []);
 
-  const getLevelProgress = () => {
-    const currentLevelXP = student.level * 500;
-    const nextLevelXP = (student.level + 1) * 500;
-    const progressInLevel = student.totalXP - currentLevelXP;
-    const xpNeededForNext = nextLevelXP - currentLevelXP;
-    return (progressInLevel / xpNeededForNext) * 100;
+  const fetchDashboardData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem("authToken");
+      const userId = localStorage.getItem("userId");
+
+      if (!token || !userId) {
+        console.error("No student token or ID found");
+        window.location.href = "/login";
+        return;
+      }
+
+      // Fetch dashboard statistics
+      const statsResponse = await fetch(
+        `http://localhost:8080/api/student/dashboard/stats/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (statsResponse.ok) {
+        const statsResult = await statsResponse.json();
+        if (statsResult.success) {
+          setStats(statsResult.data);
+        }
+      } else if (statsResponse.status === 401) {
+        // Token expired or invalid
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userData");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("username");
+        window.location.href = "/login";
+        return;
+      }
+
+      // Fetch recent activities
+      const activitiesResponse = await fetch(
+        `http://localhost:8080/api/student/dashboard/activities/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (activitiesResponse.ok) {
+        const activitiesResult = await activitiesResponse.json();
+        if (activitiesResult.success) {
+          setRecentActivity(activitiesResult.data);
+        }
+      }
+
+      // Fetch upcoming lessons
+      const lessonsResponse = await fetch(
+        `http://localhost:8080/api/student/dashboard/upcoming-lessons/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (lessonsResponse.ok) {
+        const lessonsResult = await lessonsResponse.json();
+        if (lessonsResult.success) {
+          setUpcomingLessons(lessonsResult.data);
+        }
+      }
+
+      // Fetch recent achievements
+      const achievementsResponse = await fetch(
+        `http://localhost:8080/api/student/dashboard/achievements/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (achievementsResponse.ok) {
+        const achievementsResult = await achievementsResponse.json();
+        if (achievementsResult.success) {
+          setAchievements(achievementsResult.data);
+        }
+      }
+
+      // Fetch student profile data
+      const profileResponse = await fetch(
+        `http://localhost:8080/api/student/profile/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (profileResponse.ok) {
+        const profileResult = await profileResponse.json();
+        if (profileResult.success && profileResult.data) {
+          const student = profileResult.data;
+          setStudentData({
+            id: student.id,
+            username: student.username,
+            firstName: student.firstName,
+            lastName: student.lastName,
+            email: student.email,
+            languageToLearn: student.languageToLearn,
+            languageKnown: student.languageKnown,
+            currentLevel: student.currentLevel || 1,
+            totalXP: student.totalXP || 0,
+          });
+
+          // Update localStorage with fresh data
+          localStorage.setItem(
+            "userData",
+            JSON.stringify({
+              ...student,
+              currentLevel: student.currentLevel || 1,
+              totalXP: student.totalXP || 0,
+            })
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setError("Failed to load dashboard data");
+
+      // Use fallback data
+      setStats({
+        totalLessonsCompleted: 45,
+        currentStreak: 7,
+        totalXP: 2450,
+        currentLevel: 5,
+        coursesEnrolled: 3,
+        coursesCompleted: 1,
+        averageScore: 87,
+        weeklyGoalProgress: 75,
+      });
+
+      setRecentActivity([
+        {
+          id: 1,
+          type: "lesson_completed",
+          title: "Spanish Grammar Basics - Lesson 3",
+          course: "Spanish Fundamentals",
+          time: "2 hours ago",
+          xpEarned: 50,
+          status: "completed",
+        },
+        {
+          id: 2,
+          type: "quiz_completed",
+          title: "Vocabulary Quiz",
+          course: "English Advanced",
+          time: "1 day ago",
+          score: 92,
+          status: "completed",
+        },
+      ]);
+
+      setUpcomingLessons([
+        {
+          id: 1,
+          title: "Spanish Conversation Practice",
+          course: "Spanish Fundamentals",
+          time: "2:00 PM Today",
+          duration: "30 min",
+          difficulty: "intermediate",
+          type: "conversation",
+        },
+        {
+          id: 2,
+          title: "Grammar Review",
+          course: "English Advanced",
+          time: "Tomorrow 10:00 AM",
+          duration: "45 min",
+          difficulty: "advanced",
+          type: "lesson",
+        },
+      ]);
+
+      setAchievements([
+        {
+          id: 1,
+          title: "7-Day Streak!",
+          description: "Completed lessons for 7 consecutive days",
+          icon: "🔥",
+          earned: true,
+          dateEarned: "2024-01-20",
+        },
+        {
+          id: 2,
+          title: "Grammar Master",
+          description: "Scored 90+ on 5 grammar quizzes",
+          icon: "📚",
+          earned: true,
+          dateEarned: "2024-01-18",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getXPToNextLevel = () => {
-    const nextLevelXP = (student.level + 1) * 500;
-    return nextLevelXP - student.totalXP;
+  const handleStartLesson = async (lessonId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const userId = localStorage.getItem("userId");
+
+      // Log lesson start activity
+      await fetch(
+        `http://localhost:8080/api/student/lessons/${lessonId}/start`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ studentId: userId }),
+        }
+      );
+
+      // Navigate to lesson
+      window.location.href = `/student/lessons/${lessonId}`;
+    } catch (error) {
+      console.error("Error starting lesson:", error);
+      // Navigate anyway if API fails
+      window.location.href = `/student/lessons/${lessonId}`;
+    }
   };
 
-  const formatTimeAgo = (timestamp) => {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diffHours = Math.floor((now - time) / (1000 * 60 * 60));
-    
-    if (diffHours < 1) return 'Just now';
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
+  const handleRefreshData = () => {
+    fetchDashboardData();
   };
+
+  const calculateLevelProgress = () => {
+    const xpPerLevel = 500; // Assuming 500 XP per level
+    const currentLevelXP = stats.totalXP % xpPerLevel;
+    const progressPercentage = (currentLevelXP / xpPerLevel) * 100;
+    return Math.min(progressPercentage, 100);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch {
+      return dateString;
+    }
+  };
+
+  const getDisplayName = () => {
+    if (studentData?.firstName && studentData?.lastName) {
+      return `${studentData.firstName} ${studentData.lastName}`;
+    }
+    return studentData?.username || "Student";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7D29] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Error Loading Dashboard
+          </h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={handleRefreshData}
+            className="bg-[#FF7D29] text-white px-6 py-2 rounded-lg hover:bg-[#FF9D5C] transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      {/* Welcome Header */}
+      {/* Welcome Section */}
       <motion.div
-        className="bg-gradient-to-r from-[#FF7D29] to-[#FF9D5C] rounded-2xl p-8 text-white relative overflow-hidden"
+        className="bg-gradient-to-r from-[#FF7D29] to-[#FF9D5C] rounded-2xl p-8 text-white"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">
-                Welcome back, {student.name.split(' ')[0]}! 👋
-              </h1>
-              <p className="text-orange-100 text-lg mb-4">
-                Ready to continue your learning journey?
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
+              Welcome back, {getDisplayName()}!
+            </h1>
+            <p className="text-orange-100 text-lg">
+              Ready to continue your learning journey?
+            </p>
+            {studentData?.languageToLearn && (
+              <p className="text-orange-200 text-sm mt-2">
+                Learning: {studentData.languageToLearn}
+                {studentData.languageKnown &&
+                  ` | Native: ${studentData.languageKnown}`}
               </p>
-              
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🔥</span>
-                  <div>
-                    <p className="text-sm text-orange-200">Current Streak</p>
-                    <p className="text-xl font-bold">{student.currentStreak} days</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">⭐</span>
-                  <div>
-                    <p className="text-sm text-orange-200">Level {student.level}</p>
-                    <p className="text-xl font-bold">{student.totalXP} XP</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="hidden md:block">
-              <Image
-                src="/Gif/reading boy.gif"
-                alt="Learning mascot"
-                width={120}
-                height={120}
-                unoptimized={true}
-              />
-            </div>
+            )}
           </div>
-          
-          {/* Level Progress */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-orange-200">Level Progress</span>
-              <span className="text-sm text-orange-200">
-                {getXPToNextLevel()} XP to Level {student.level + 1}
-              </span>
-            </div>
-            <div className="w-full bg-orange-400 bg-opacity-30 rounded-full h-3">
-              <motion.div
-                className="bg-white h-3 rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${getLevelProgress()}%` }}
-                transition={{ duration: 1, delay: 0.5 }}
-              />
-            </div>
+          <div className="hidden md:block">
+            <Image
+              src="/Gif/Cup.gif"
+              alt="Learning mascot"
+              width={80}
+              height={80}
+              unoptimized={true}
+            />
           </div>
         </div>
-        
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white bg-opacity-10 rounded-full -translate-y-32 translate-x-32"></div>
       </motion.div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { 
-            title: 'Courses Enrolled', 
-            value: enrolledCourses.length, 
-            icon: '📚', 
-            color: 'bg-blue-500',
-            subtitle: `${enrolledCourses.filter(c => c.status === 'in-progress').length} active`
+          {
+            title: "Current Streak",
+            value: `${stats.currentStreak} days`,
+            icon: "🔥",
+            color: "bg-red-500",
+            change:
+              stats.currentStreak > 0 ? "Keep it going!" : "Start your streak!",
           },
-          { 
-            title: 'Lessons Completed', 
-            value: enrolledCourses.reduce((sum, course) => sum + course.completedLessons, 0), 
-            icon: '✅', 
-            color: 'bg-green-500',
-            subtitle: 'This month'
+          {
+            title: "Total XP",
+            value: stats.totalXP.toLocaleString(),
+            icon: "⭐",
+            color: "bg-yellow-500",
+            change: `Level ${stats.currentLevel}`,
           },
-          { 
-            title: 'Average Score', 
-            value: '87%', 
-            icon: '🎯', 
-            color: 'bg-purple-500',
-            subtitle: 'Quiz performance'
+          {
+            title: "Lessons Completed",
+            value: stats.totalLessonsCompleted,
+            icon: "📚",
+            color: "bg-blue-500",
+            change: `${stats.coursesEnrolled} courses enrolled`,
           },
-          { 
-            title: 'Hours Learned', 
-            value: '24.5', 
-            icon: '⏱️', 
-            color: 'bg-yellow-500',
-            subtitle: 'Total time'
-          }
+          {
+            title: "Average Score",
+            value: `${stats.averageScore}%`,
+            icon: "🎯",
+            color: "bg-green-500",
+            change: stats.averageScore >= 80 ? "Excellent!" : "Keep improving!",
+          },
         ].map((stat, index) => (
           <motion.div
             key={stat.title}
@@ -273,14 +414,17 @@ const StudentDashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
+            whileHover={{ scale: 1.02 }}
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm">{stat.title}</p>
                 <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-                <p className="text-xs text-gray-500 mt-1">{stat.subtitle}</p>
+                <p className="text-xs text-green-600 mt-1">{stat.change}</p>
               </div>
-              <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center text-white text-xl`}>
+              <div
+                className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center text-white text-2xl`}
+              >
                 {stat.icon}
               </div>
             </div>
@@ -288,219 +432,344 @@ const StudentDashboard = () => {
         ))}
       </div>
 
-      {/* Continue Learning Section */}
+      {/* Level Progress */}
       <motion.div
-        className="bg-white rounded-xl shadow-lg p-8"
+        className="bg-white rounded-xl p-6 shadow-lg"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-800">Level Progress</h2>
+          <span className="text-[#FF7D29] font-semibold">
+            Level {stats.currentLevel}
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
+          <motion.div
+            className="bg-gradient-to-r from-[#FF7D29] to-[#FF9D5C] h-4 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${calculateLevelProgress()}%` }}
+            transition={{ duration: 1, delay: 0.5 }}
+          />
+        </div>
+        <div className="flex justify-between text-sm text-gray-600">
+          <span>{stats.totalXP % 500} XP</span>
+          <span>{500 - (stats.totalXP % 500)} XP to next level</span>
+        </div>
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div
+        className="bg-white rounded-xl p-6 shadow-lg"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Continue Learning</h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {enrolledCourses.filter(course => course.status === 'in-progress').map((course, index) => (
+        <h2 className="text-xl font-bold text-gray-800 mb-6">Quick Actions</h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link href="/student/browse">
             <motion.div
-              key={course.id}
-              className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all group"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index }}
+              className="p-4 border-2 border-dashed border-[#FF7D29] rounded-xl hover:bg-orange-50 transition-all cursor-pointer"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800 text-lg mb-1">
-                    {course.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {course.category} • {course.instructor}
-                  </p>
-                  <p className="text-sm text-blue-600 font-medium">
-                    {course.currentModule}
-                  </p>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-[#FF7D29] rounded-xl flex items-center justify-center text-white text-xl mx-auto mb-3">
+                  🔍
                 </div>
-                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                  {course.level}
-                </span>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Progress</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {course.completedLessons}/{course.totalLessons} lessons ({course.progress}%)
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <motion.div
-                    className="bg-[#FF7D29] h-2 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${course.progress}%` }}
-                    transition={{ duration: 0.8, delay: 0.5 + index * 0.1 }}
-                  />
-                </div>
-              </div>
-
-              {/* Next Lesson */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <p className="text-sm text-gray-600 mb-1">Next Lesson:</p>
-                <p className="font-medium text-gray-800">{course.nextLesson}</p>
-                <p className="text-sm text-gray-500">Estimated time: {course.estimatedTime}</p>
-              </div>
-
-              <div className="flex gap-3">
-                <Link 
-                  href={`/student/courses/${course.id}/continue`}
-                  className="flex-1 text-center py-3 bg-[#FF7D29] text-white rounded-xl font-medium hover:bg-[#FF9D5C] transition-all"
-                >
-                  Continue Learning
-                </Link>
-                <Link 
-                  href={`/student/courses/${course.id}`}
-                  className="px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all"
-                >
-                  View Course
-                </Link>
+                <h3 className="font-semibold text-gray-800">Browse Courses</h3>
+                <p className="text-gray-600 text-sm">Discover new lessons</p>
               </div>
             </motion.div>
-          ))}
+          </Link>
+
+          <Link href="/student/progress">
+            <motion.div
+              className="p-4 border-2 border-dashed border-blue-400 rounded-xl hover:bg-blue-50 transition-all cursor-pointer"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-white text-xl mx-auto mb-3">
+                  📊
+                </div>
+                <h3 className="font-semibold text-gray-800">View Progress</h3>
+                <p className="text-gray-600 text-sm">Track your learning</p>
+              </div>
+            </motion.div>
+          </Link>
+
+          <Link href="/student/quizzes">
+            <motion.div
+              className="p-4 border-2 border-dashed border-green-400 rounded-xl hover:bg-green-50 transition-all cursor-pointer"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-white text-xl mx-auto mb-3">
+                  🧠
+                </div>
+                <h3 className="font-semibold text-gray-800">Take Quiz</h3>
+                <p className="text-gray-600 text-sm">Test your knowledge</p>
+              </div>
+            </motion.div>
+          </Link>
+
+          <Link href="/student/achievements">
+            <motion.div
+              className="p-4 border-2 border-dashed border-purple-400 rounded-xl hover:bg-purple-50 transition-all cursor-pointer"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-white text-xl mx-auto mb-3">
+                  🏆
+                </div>
+                <h3 className="font-semibold text-gray-800">Achievements</h3>
+                <p className="text-gray-600 text-sm">View your awards</p>
+              </div>
+            </motion.div>
+          </Link>
         </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Activity */}
+        {/* Upcoming Lessons */}
         <motion.div
-          className="bg-white rounded-xl shadow-lg p-8"
+          className="bg-white rounded-xl p-6 shadow-lg"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <h2 className="text-xl font-bold text-gray-800 mb-6">Recent Activity</h2>
-          
-          <div className="space-y-4">
-            {recentActivity.map((activity, index) => (
-              <motion.div
-                key={activity.id}
-                className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-50 transition-all"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * index }}
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm ${
-                  activity.type === 'lesson_completed' ? 'bg-green-500' :
-                  activity.type === 'quiz_passed' ? 'bg-blue-500' :
-                  activity.type === 'streak_milestone' ? 'bg-orange-500' : 'bg-gray-500'
-                }`}>
-                  {activity.type === 'lesson_completed' ? '✓' :
-                   activity.type === 'quiz_passed' ? '🧠' :
-                   activity.type === 'streak_milestone' ? '🔥' : '📚'}
-                </div>
-                
-                <div className="flex-1">
-                  <p className="font-medium text-gray-800">{activity.title}</p>
-                  {activity.course && (
-                    <p className="text-sm text-gray-600">{activity.course}</p>
-                  )}
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-xs text-gray-500">
-                      {formatTimeAgo(activity.timestamp)}
-                    </span>
-                    {activity.xpGained && (
-                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                        +{activity.xpGained} XP
-                      </span>
-                    )}
-                    {activity.score && (
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        {activity.score}% Score
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-6">
+            Upcoming Lessons
+          </h2>
 
-          <Link 
-            href="/student/activity"
-            className="block text-center mt-6 text-[#FF7D29] hover:text-[#FF9D5C] font-medium"
-          >
-            View All Activity
-          </Link>
+          <div className="space-y-4">
+            {upcomingLessons.length > 0 ? (
+              upcomingLessons.map((lesson, index) => (
+                <motion.div
+                  key={lesson.id}
+                  className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + index * 0.1 }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800">
+                        {lesson.title}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Course: {lesson.course}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                          {lesson.duration}
+                        </span>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            lesson.difficulty === "beginner"
+                              ? "bg-green-100 text-green-700"
+                              : lesson.difficulty === "intermediate"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {lesson.difficulty}
+                        </span>
+                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                          {lesson.type}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {lesson.time}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleStartLesson(lesson.id)}
+                        className="bg-[#FF7D29] text-white px-3 py-1 rounded-lg text-sm hover:bg-[#FF9D5C] transition-colors"
+                      >
+                        Start
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3">📚</div>
+                <p className="text-gray-500">No upcoming lessons</p>
+                <Link
+                  href="/student/browse"
+                  className="text-[#FF7D29] hover:text-[#FF9D5C] text-sm font-medium mt-2 inline-block"
+                >
+                  Browse courses to get started
+                </Link>
+              </div>
+            )}
+          </div>
         </motion.div>
 
-        {/* Achievements */}
+        {/* Recent Activity */}
         <motion.div
-          className="bg-white rounded-xl shadow-lg p-8"
+          className="bg-white rounded-xl p-6 shadow-lg"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <h2 className="text-xl font-bold text-gray-800 mb-6">Achievements</h2>
-          
+          <h2 className="text-xl font-bold text-gray-800 mb-6">
+            Recent Activity
+          </h2>
+
           <div className="space-y-4">
-            {achievements.map((achievement, index) => (
+            {recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => (
+                <motion.div
+                  key={activity.id}
+                  className="flex items-start space-x-3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                >
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                      activity.type === "lesson_completed"
+                        ? "bg-green-500"
+                        : activity.type === "quiz_completed"
+                        ? "bg-blue-500"
+                        : activity.type === "achievement_earned"
+                        ? "bg-yellow-500"
+                        : "bg-gray-500"
+                    }`}
+                  >
+                    {activity.type === "lesson_completed"
+                      ? "📚"
+                      : activity.type === "quiz_completed"
+                      ? "🧠"
+                      : activity.type === "achievement_earned"
+                      ? "🏆"
+                      : "📝"}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-800 font-medium">
+                      {activity.title}
+                    </p>
+                    <p className="text-xs text-gray-600">{activity.course}</p>
+                    {activity.xpEarned && (
+                      <p className="text-xs text-[#FF7D29] font-medium">
+                        +{activity.xpEarned} XP
+                      </p>
+                    )}
+                    {activity.score && (
+                      <p className="text-xs text-green-600 font-medium">
+                        Score: {activity.score}%
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-400">
+                      {formatDate(activity.time) || activity.time}
+                    </p>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3">📝</div>
+                <p className="text-gray-500">No recent activity</p>
+                <p className="text-gray-400 text-sm">
+                  Start learning to see your progress here
+                </p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Recent Achievements */}
+      {achievements.length > 0 && (
+        <motion.div
+          className="bg-white rounded-xl p-6 shadow-lg"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-800">
+              Recent Achievements
+            </h2>
+            <Link
+              href="/student/achievements"
+              className="text-[#FF7D29] hover:text-[#FF9D5C] text-sm font-medium"
+            >
+              View All
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {achievements.slice(0, 3).map((achievement, index) => (
               <motion.div
                 key={achievement.id}
-                className={`p-4 rounded-lg border transition-all ${
-                  achievement.unlocked 
-                    ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200' 
-                    : 'bg-gray-50 border-gray-200'
-                }`}
+                className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 * index }}
+                transition={{ delay: 0.7 + index * 0.1 }}
               >
-                <div className="flex items-center gap-4">
-                  <div className={`text-3xl ${achievement.unlocked ? 'grayscale-0' : 'grayscale'}`}>
-                    {achievement.icon}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <h3 className={`font-semibold ${
-                      achievement.unlocked ? 'text-gray-800' : 'text-gray-500'
-                    }`}>
-                      {achievement.title}
-                    </h3>
-                    <p className={`text-sm ${
-                      achievement.unlocked ? 'text-gray-600' : 'text-gray-400'
-                    }`}>
-                      {achievement.description}
-                    </p>
-                    
-                    {achievement.unlocked ? (
-                      <p className="text-xs text-green-600 mt-1">
-                        Unlocked {new Date(achievement.unlockedDate).toLocaleDateString()}
-                      </p>
-                    ) : achievement.progress !== undefined ? (
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-gray-500">
-                            Progress: {achievement.progress}/{achievement.target}
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1">
-                          <div 
-                            className="bg-[#FF7D29] h-1 rounded-full transition-all duration-500"
-                            style={{ width: `${(achievement.progress / achievement.target) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
+                <div className="text-center">
+                  <div className="text-3xl mb-2">{achievement.icon}</div>
+                  <h3 className="font-semibold text-gray-800 mb-1">
+                    {achievement.title}
+                  </h3>
+                  <p className="text-xs text-gray-600 mb-2">
+                    {achievement.description}
+                  </p>
+                  <p className="text-xs text-yellow-600 font-medium">
+                    Earned {formatDate(achievement.dateEarned)}
+                  </p>
                 </div>
               </motion.div>
             ))}
           </div>
-
-          <Link 
-            href="/student/achievements"
-            className="block text-center mt-6 text-[#FF7D29] hover:text-[#FF9D5C] font-medium"
-          >
-            View All Achievements
-          </Link>
         </motion.div>
-      </div>
+      )}
+
+      {/* Weekly Goal Progress */}
+      <motion.div
+        className="bg-white rounded-xl p-6 shadow-lg"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+      >
+        <h2 className="text-xl font-bold text-gray-800 mb-4">
+          Weekly Goal Progress
+        </h2>
+        <div className="mb-4">
+          <div className="flex justify-between text-sm text-gray-600 mb-2">
+            <span>
+              {Math.floor(stats.weeklyGoalProgress / 15)} lessons completed this
+              week
+            </span>
+            <span>{stats.weeklyGoalProgress}% of goal</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <motion.div
+              className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(stats.weeklyGoalProgress, 100)}%` }}
+              transition={{ duration: 1, delay: 0.8 }}
+            />
+          </div>
+        </div>
+        <p className="text-sm text-gray-600">
+          {stats.weeklyGoalProgress >= 100
+            ? "🎉 Congratulations! You've completed your weekly goal!"
+            : `Great progress! Complete ${Math.ceil(
+                (100 - stats.weeklyGoalProgress) / 15
+              )} more lessons to reach your weekly goal.`}
+        </p>
+      </motion.div>
     </div>
   );
 };
