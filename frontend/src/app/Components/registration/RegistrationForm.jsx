@@ -132,7 +132,7 @@ const RegistrationForm = ({ selectedLanguages, onBack }) => {
             localStorage.setItem('knownLanguage', selectedLanguages.know.code);
             
             // Redirect to student dashboard
-            router.push('/lessons');
+            router.push('/courses');
 
         } catch (error) {
             console.error('Registration failed:', error);

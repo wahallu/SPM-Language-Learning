@@ -77,6 +77,8 @@ const TeacherLogin = () => {
         localStorage.setItem('token', result.data.token);
         localStorage.setItem('userType', 'teacher');
         localStorage.setItem('teacherData', JSON.stringify(result.data.teacher));
+
+        console.log(result);
         
         // Redirect to teacher dashboard
         router.push('/teacher');

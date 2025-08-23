@@ -73,19 +73,21 @@ const LoginForm = ({ onForgotPassword }) => {
         }),
       });
       
-      const data = await response.json();
+      const result = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(result.message || 'Login failed');
       }
       
       // Store auth token in localStorage or cookies
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userId', data.userId);
-      localStorage.setItem('username', data.username);
+      // localStorage.setItem('token', result.token);
+      // localStorage.setItem('userType', 'user');
+      // localStorage.setItem('userData', JSON.stringify(result.user));
+
+      console.log(result);
       
       // Redirect based on user role (you might need to implement role-based logic)
-      router.push('/lessons');
+      router.push('/courses');
       
     } catch (error) {
       console.error('Login failed:', error);

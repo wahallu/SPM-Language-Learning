@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import Link from 'next/link';
-import Image from 'next/image';
-import ApiService from '../../utils/api';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import Link from "next/link";
+import Image from "next/image";
+import ApiService from "../../utils/api";
 
 const TeacherCoursesPage = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('recent');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("recent");
+  const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
 
   // Fetch courses on component mount
   useEffect(() => {
@@ -29,7 +29,7 @@ const TeacherCoursesPage = () => {
       // Get current teacher data
       const currentUser = ApiService.getCurrentUser();
       if (!currentUser || !currentUser.id) {
-        throw new Error('Teacher not found. Please login again.');
+        throw new Error("Teacher not found. Please login again.");
       }
 
       // Fetch courses for the current teacher
@@ -38,10 +38,10 @@ const TeacherCoursesPage = () => {
       if (response.success) {
         setCourses(response.data || []);
       } else {
-        throw new Error(response.message || 'Failed to fetch courses');
+        throw new Error(response.message || "Failed to fetch courses");
       }
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      console.error("Error fetching courses:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -50,20 +50,23 @@ const TeacherCoursesPage = () => {
 
   // Filter and sort courses
   const filteredCourses = courses
-    .filter(course => {
-      const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    .filter((course) => {
+      const matchesSearch =
+        course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.category.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = filterStatus === 'all' || course.status === filterStatus;
-      const matchesCategory = filterCategory === 'all' || course.category === filterCategory;
+      const matchesStatus =
+        filterStatus === "all" || course.status === filterStatus;
+      const matchesCategory =
+        filterCategory === "all" || course.category === filterCategory;
       return matchesSearch && matchesStatus && matchesCategory;
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'recent':
+        case "recent":
           return new Date(b.createdAt) - new Date(a.createdAt);
-        case 'students':
+        case "students":
           return (b.students || 0) - (a.students || 0);
-        case 'alphabetical':
+        case "alphabetical":
           return a.title.localeCompare(b.title);
         default:
           return 0;
@@ -72,33 +75,43 @@ const TeacherCoursesPage = () => {
 
   const stats = {
     totalCourses: courses.length,
-    publishedCourses: courses.filter(c => c.status === 'published').length,
-    draftCourses: courses.filter(c => c.status === 'draft').length,
-    totalStudents: courses.reduce((sum, course) => sum + (course.students || 0), 0)
+    publishedCourses: courses.filter((c) => c.status === "published").length,
+    draftCourses: courses.filter((c) => c.status === "draft").length,
+    totalStudents: courses.reduce(
+      (sum, course) => sum + (course.students || 0),
+      0
+    ),
   };
 
-  const categories = ['All', ...new Set(courses.map(course => course.category))];
+  const categories = [
+    "All",
+    ...new Set(courses.map((course) => course.category)),
+  ];
 
   const handleDeleteCourse = async (courseId) => {
-    if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+    if (
+      confirm(
+        "Are you sure you want to delete this course? This action cannot be undone."
+      )
+    ) {
       try {
         const response = await ApiService.deleteCourse(courseId);
         if (response.success) {
-          setCourses(prev => prev.filter(c => c.id !== courseId));
-          alert('Course deleted successfully');
+          setCourses((prev) => prev.filter((c) => c.id !== courseId));
+          alert("Course deleted successfully");
         } else {
-          throw new Error(response.message || 'Failed to delete course');
+          throw new Error(response.message || "Failed to delete course");
         }
       } catch (error) {
-        console.error('Error deleting course:', error);
-        alert(error.message || 'Failed to delete course');
+        console.error("Error deleting course:", error);
+        alert(error.message || "Failed to delete course");
       }
     }
   };
 
   const handleDuplicateCourse = async (courseId) => {
     try {
-      const course = courses.find(c => c.id === courseId);
+      const course = courses.find((c) => c.id === courseId);
       if (!course) return;
 
       const duplicatedCourseData = {
@@ -112,20 +125,20 @@ const TeacherCoursesPage = () => {
         price: course.price,
         estimatedDuration: course.estimatedDuration,
         prerequisites: course.prerequisites || [],
-        learningObjectives: course.learningObjectives || []
+        learningObjectives: course.learningObjectives || [],
       };
 
       const response = await ApiService.createCourse(duplicatedCourseData);
       if (response.success) {
         // Refresh courses list
         await fetchCourses();
-        alert('Course duplicated successfully');
+        alert("Course duplicated successfully");
       } else {
-        throw new Error(response.message || 'Failed to duplicate course');
+        throw new Error(response.message || "Failed to duplicate course");
       }
     } catch (error) {
-      console.error('Error duplicating course:', error);
-      alert(error.message || 'Failed to duplicate course');
+      console.error("Error duplicating course:", error);
+      alert(error.message || "Failed to duplicate course");
     }
   };
 
@@ -150,7 +163,9 @@ const TeacherCoursesPage = () => {
         <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <span className="text-4xl">⚠️</span>
         </div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Courses</h3>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          Error Loading Courses
+        </h3>
         <p className="text-gray-600 mb-6">{error}</p>
         <button
           onClick={fetchCourses}
@@ -172,7 +187,9 @@ const TeacherCoursesPage = () => {
       >
         <div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">My Courses</h1>
-          <p className="text-gray-600">Manage and track all your courses in one place</p>
+          <p className="text-gray-600">
+            Manage and track all your courses in one place
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -204,10 +221,30 @@ const TeacherCoursesPage = () => {
         transition={{ delay: 0.1 }}
       >
         {[
-          { title: 'Total Courses', value: stats.totalCourses, icon: '📚', color: 'bg-blue-500' },
-          { title: 'Published', value: stats.publishedCourses, icon: '✅', color: 'bg-green-500' },
-          { title: 'Draft', value: stats.draftCourses, icon: '📝', color: 'bg-yellow-500' },
-          { title: 'Total Students', value: stats.totalStudents.toLocaleString(), icon: '👥', color: 'bg-purple-500' }
+          {
+            title: "Total Courses",
+            value: stats.totalCourses,
+            icon: "📚",
+            color: "bg-blue-500",
+          },
+          {
+            title: "Published",
+            value: stats.publishedCourses,
+            icon: "✅",
+            color: "bg-green-500",
+          },
+          {
+            title: "Draft",
+            value: stats.draftCourses,
+            icon: "📝",
+            color: "bg-yellow-500",
+          },
+          {
+            title: "Total Students",
+            value: stats.totalStudents.toLocaleString(),
+            icon: "👥",
+            color: "bg-purple-500",
+          },
         ].map((stat, index) => (
           <motion.div
             key={stat.title}
@@ -221,7 +258,9 @@ const TeacherCoursesPage = () => {
                 <p className="text-gray-600 text-sm">{stat.title}</p>
                 <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
               </div>
-              <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center text-white text-xl`}>
+              <div
+                className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center text-white text-xl`}
+              >
                 {stat.icon}
               </div>
             </div>
@@ -252,7 +291,12 @@ const TeacherCoursesPage = () => {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
           </div>
 
@@ -274,8 +318,10 @@ const TeacherCoursesPage = () => {
               className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FF7D29] focus:border-transparent"
             >
               <option value="all">All Categories</option>
-              {categories.slice(1).map(category => (
-                <option key={category} value={category}>{category}</option>
+              {categories.slice(1).map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
               ))}
             </select>
 
@@ -292,19 +338,39 @@ const TeacherCoursesPage = () => {
             {/* View Mode Toggle */}
             <div className="flex border border-gray-300 rounded-lg overflow-hidden">
               <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-[#FF7D29] text-white' : 'bg-white text-gray-600'}`}
+                onClick={() => setViewMode("grid")}
+                className={`p-2 ${
+                  viewMode === "grid"
+                    ? "bg-[#FF7D29] text-white"
+                    : "bg-white text-gray-600"
+                }`}
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
               </button>
               <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-[#FF7D29] text-white' : 'bg-white text-gray-600'}`}
+                onClick={() => setViewMode("list")}
+                className={`p-2 ${
+                  viewMode === "list"
+                    ? "bg-[#FF7D29] text-white"
+                    : "bg-white text-gray-600"
+                }`}
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </button>
             </div>
@@ -324,28 +390,33 @@ const TeacherCoursesPage = () => {
               <span className="text-4xl">📚</span>
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              {searchTerm || filterStatus !== 'all' || filterCategory !== 'all'
-                ? 'No courses found'
-                : 'No courses yet'}
+              {searchTerm || filterStatus !== "all" || filterCategory !== "all"
+                ? "No courses found"
+                : "No courses yet"}
             </h3>
             <p className="text-gray-600 mb-6">
-              {searchTerm || filterStatus !== 'all' || filterCategory !== 'all'
-                ? 'Try adjusting your search or filters'
-                : 'Create your first course to get started'}
+              {searchTerm || filterStatus !== "all" || filterCategory !== "all"
+                ? "Try adjusting your search or filters"
+                : "Create your first course to get started"}
             </p>
-            {!searchTerm && filterStatus === 'all' && filterCategory === 'all' && (
-              <Link href="/teacher/courses/create">
-                <button className="bg-[#FF7D29] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#FF9D5C] transition-all">
-                  Create Your First Course
-                </button>
-              </Link>
-            )}
+            {!searchTerm &&
+              filterStatus === "all" &&
+              filterCategory === "all" && (
+                <Link href="/teacher/courses/create">
+                  <button className="bg-[#FF7D29] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#FF9D5C] transition-all">
+                    Create Your First Course
+                  </button>
+                </Link>
+              )}
           </div>
         ) : (
-          <div className={viewMode === 'grid'
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-            : 'space-y-4'
-          }>
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                : "space-y-4"
+            }
+          >
             <AnimatePresence>
               {filteredCourses.map((course, index) => (
                 <motion.div
@@ -355,9 +426,9 @@ const TeacherCoursesPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ delay: index * 0.1 }}
-                  className={viewMode === 'grid' ? '' : 'w-full'}
+                  className={viewMode === "grid" ? "" : "w-full"}
                 >
-                  {viewMode === 'grid' ? (
+                  {viewMode === "grid" ? (
                     <CourseCardGrid
                       course={course}
                       onDelete={handleDeleteCourse}
@@ -383,14 +454,28 @@ const TeacherCoursesPage = () => {
 // Grid View Course Card Component
 const CourseCardGrid = ({ course, onDelete, onDuplicate }) => {
   const [showActions, setShowActions] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
       return new Date(dateString).toLocaleDateString();
     } catch (error) {
-      return 'N/A';
+      return "N/A";
     }
+  };
+
+  // Check if the image URL is a valid image URL (not a YouTube video URL)
+  const isValidImageUrl = (url) => {
+    if (!url) return false;
+    // Check if it's a YouTube URL
+    if (url.includes("youtu.be") || url.includes("youtube.com/watch"))
+      return false;
+    // Check if it has image extension
+    return (
+      /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) ||
+      url.includes("cloudinary.com")
+    );
   };
 
   return (
@@ -401,28 +486,29 @@ const CourseCardGrid = ({ course, onDelete, onDuplicate }) => {
     >
       {/* Course Image */}
       <div className="aspect-video bg-gray-100 relative overflow-hidden">
-        {course.image ? (
+        {course.image && isValidImageUrl(course.image) && !imageError ? (
           <Image
             src={course.image}
             alt={course.title}
             fill
             className="object-cover"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
+            onError={() => setImageError(true)}
           />
-        ) : null}
-        <div className="w-full h-full flex items-center justify-center">
-          <span className="text-6xl">📚</span>
-        </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-6xl">📚</span>
+          </div>
+        )}
 
         {/* Status Badge */}
         <div className="absolute top-3 left-3">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${course.status === 'published'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-yellow-100 text-yellow-800'
-            }`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
+              course.status === "published"
+                ? "bg-green-100 text-green-800"
+                : "bg-yellow-100 text-yellow-800"
+            }`}
+          >
             {course.status}
           </span>
         </div>
@@ -446,7 +532,9 @@ const CourseCardGrid = ({ course, onDelete, onDuplicate }) => {
             <h3 className="font-semibold text-gray-800 text-lg mb-1 line-clamp-2">
               {course.title}
             </h3>
-            <p className="text-sm text-gray-600">{course.category} • {course.level}</p>
+            <p className="text-sm text-gray-600">
+              {course.category} • {course.level}
+            </p>
           </div>
         </div>
 
@@ -491,13 +579,28 @@ const CourseCardGrid = ({ course, onDelete, onDuplicate }) => {
 
 // List View Course Card Component
 const CourseCardList = ({ course, onDelete, onDuplicate }) => {
+  const [imageError, setImageError] = useState(false);
+
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
       return new Date(dateString).toLocaleDateString();
     } catch (error) {
-      return 'N/A';
+      return "N/A";
     }
+  };
+
+  // Check if the image URL is a valid image URL (not a YouTube video URL)
+  const isValidImageUrl = (url) => {
+    if (!url) return false;
+    // Check if it's a YouTube URL
+    if (url.includes("youtu.be") || url.includes("youtube.com/watch"))
+      return false;
+    // Check if it has image extension
+    return (
+      /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) ||
+      url.includes("cloudinary.com")
+    );
   };
 
   return (
@@ -505,20 +608,18 @@ const CourseCardList = ({ course, onDelete, onDuplicate }) => {
       <div className="flex items-center gap-6">
         {/* Course Icon */}
         <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-          {course.image ? (
+          {course.image && isValidImageUrl(course.image) && !imageError ? (
             <Image
               src={course.image}
               alt={course.title}
               width={64}
               height={64}
               className="rounded-xl object-cover"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }}
+              onError={() => setImageError(true)}
             />
-          ) : null}
-          <span className="text-2xl">📚</span>
+          ) : (
+            <span className="text-2xl">📚</span>
+          )}
         </div>
 
         {/* Course Info */}
@@ -528,12 +629,17 @@ const CourseCardList = ({ course, onDelete, onDuplicate }) => {
               <h3 className="font-semibold text-gray-800 text-lg mb-1">
                 {course.title}
               </h3>
-              <p className="text-sm text-gray-600">{course.category} • {course.level}</p>
+              <p className="text-sm text-gray-600">
+                {course.category} • {course.level}
+              </p>
             </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${course.status === 'published'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-yellow-100 text-yellow-800'
-              }`}>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                course.status === "published"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-yellow-100 text-yellow-800"
+              }`}
+            >
               {course.status}
             </span>
           </div>

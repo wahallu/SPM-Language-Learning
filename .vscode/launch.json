@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-QualityeducationApplication<qualityeducation>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.qualityeducation.QualityeducationApplication",
+            "projectName": "qualityeducation",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
