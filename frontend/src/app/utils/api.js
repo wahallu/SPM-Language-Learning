@@ -153,9 +153,7 @@ class ApiService {
   static async getAllCourses() {
     const response = await fetch(`${API_BASE_URL}/courses`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: this.getAuthHeaders(),
     });
     return this.handleResponse(response);
   }

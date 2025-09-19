@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import Button from '../ui/Button';
+import Link from "next/link";
+import Image from "next/image";
 
 const LoginForm = ({ onForgotPassword }) => {
   const router = useRouter();
@@ -13,6 +15,7 @@ const LoginForm = ({ onForgotPassword }) => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
