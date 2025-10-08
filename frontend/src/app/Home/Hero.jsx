@@ -52,7 +52,7 @@ const Hero = () => {
               {isLoggedIn ? (
                 // Show "Continue Learning" button for logged-in users
                 <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
-                  <Link href="/lessons">
+                  <Link href="/courses">
                     <button className="bg-[#FF7D29] text-white px-40 py-4 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:transform hover:bg-[#FF9D5C]">
                       CONTINUE LEARNING
                     </button>

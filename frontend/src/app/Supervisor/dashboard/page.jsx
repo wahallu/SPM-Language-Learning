@@ -36,11 +36,11 @@ const SupervisorDashboard = () => {
       setIsLoading(true);
       const token = localStorage.getItem('supervisorToken');
       
-      if (!token) {
-        console.error('No supervisor token found');
-        window.location.href = '/Supervisor/login';
-        return;
-      }
+      // if (!token) {
+      //   console.error('No supervisor token found');
+      //   window.location.href = '/Supervisor/login';
+      //   return;
+      // }
 
       // Fetch dashboard statistics
       const statsResponse = await fetch('http://localhost:8080/api/supervisor/dashboard/stats', {
