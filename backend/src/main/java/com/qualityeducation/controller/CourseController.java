@@ -104,6 +104,37 @@ public class CourseController {
         }
     }
 
+    /**
+     * Get all published courses (public access for browsing)
+     */
+    @GetMapping("/public/all")
+    public ResponseEntity<ApiResponse<List<CourseResponse>>> getAllPublishedCourses() {
+        try {
+            List<CourseResponse> courses = courseService.getAllPublishedCourses();
+            return ResponseEntity.ok(new ApiResponse<>(true, "Published courses retrieved successfully", courses));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Error retrieving courses: " + e.getMessage(), null));
+        }
+    }
+
+    /**
+     * Search published courses (public access)
+     */
+    @GetMapping("/public/search")
+    public ResponseEntity<ApiResponse<List<CourseResponse>>> searchPublishedCourses(
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String level) {
+        try {
+            List<CourseResponse> courses = courseService.searchPublishedCourses(searchTerm, category, level);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Courses found successfully", courses));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Error searching courses: " + e.getMessage(), null));
+        }
+    }
+
     // Helper method to extract teacher ID from JWT token
     private String extractTeacherIdFromToken(String token) {
         try {

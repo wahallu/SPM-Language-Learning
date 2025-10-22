@@ -260,7 +260,7 @@ const LessonDetail = () => {
               whileTap={{ scale: 0.95 }}
             >
               Start Learning Now
-            </button>
+            </motion.button>
           </Link>
         </motion.div>
       </div>

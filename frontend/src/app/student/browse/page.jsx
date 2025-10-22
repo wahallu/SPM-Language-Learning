@@ -1,152 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import Image from 'next/image';
+import ApiService from '../../utils/api';
 
 const CourseBrowserPage = () => {
-  const [courses] = useState([
-    {
-      id: 1,
-      title: "English Fundamentals",
-      description: "Master the basics of English language with comprehensive lessons covering grammar, vocabulary, and conversation skills.",
-      category: "English",
-      level: "Beginner",
-      instructor: "Dr. Maria Rodriguez",
-      instructorTitle: "Language Expert",
-      rating: 4.8,
-      totalRatings: 2543,
-      students: 15420,
-      duration: "8 weeks",
-      lessons: 45,
-      price: 49,
-      originalPrice: 99,
-      image: "/images/courses/english-fundamentals.jpg",
-      tags: ["Grammar", "Vocabulary", "Speaking", "Listening"],
-      lastUpdated: "2024-02-15",
-      language: "English",
-      certificate: true,
-      bestseller: true,
-      new: false
-    },
-    {
-      id: 2,
-      title: "Spanish for Travelers",
-      description: "Learn essential Spanish phrases and conversations for your next travel adventure. Perfect for tourists and business travelers.",
-      category: "Spanish",
-      level: "Beginner",
-      instructor: "Prof. Carlos Martinez",
-      instructorTitle: "Native Spanish Speaker",
-      rating: 4.9,
-      totalRatings: 1876,
-      students: 8932,
-      duration: "6 weeks",
-      lessons: 32,
-      price: 39,
-      originalPrice: 79,
-      image: "/images/courses/spanish-travelers.jpg",
-      tags: ["Travel", "Conversation", "Phrases", "Culture"],
-      lastUpdated: "2024-03-01",
-      language: "Spanish",
-      certificate: true,
-      bestseller: false,
-      new: true
-    },
-    {
-      id: 3,
-      title: "Business French",
-      description: "Advance your career with professional French language skills. Learn business terminology, formal communication, and networking.",
-      category: "French",
-      level: "Intermediate",
-      instructor: "Mme. Sophie Dubois",
-      instructorTitle: "Business Language Specialist",
-      rating: 4.7,
-      totalRatings: 892,
-      students: 3456,
-      duration: "10 weeks",
-      lessons: 58,
-      price: 79,
-      originalPrice: 129,
-      image: "/images/courses/business-french.jpg",
-      tags: ["Business", "Professional", "Formal", "Networking"],
-      lastUpdated: "2024-01-20",
-      language: "French",
-      certificate: true,
-      bestseller: false,
-      new: false
-    },
-    {
-      id: 4,
-      title: "German Grammar Mastery",
-      description: "Conquer German grammar with systematic lessons covering cases, verb conjugations, and sentence structure.",
-      category: "German",
-      level: "Intermediate",
-      instructor: "Dr. Hans Mueller",
-      instructorTitle: "German Linguistics PhD",
-      rating: 4.6,
-      totalRatings: 1234,
-      students: 5678,
-      duration: "12 weeks",
-      lessons: 72,
-      price: 89,
-      originalPrice: 149,
-      image: "/images/courses/german-grammar.jpg",
-      tags: ["Grammar", "Cases", "Verbs", "Structure"],
-      lastUpdated: "2024-02-28",
-      language: "German",
-      certificate: true,
-      bestseller: false,
-      new: false
-    },
-    {
-      id: 5,
-      title: "Italian Conversation Club",
-      description: "Practice Italian speaking skills in a fun, interactive environment. Join virtual conversation sessions with native speakers.",
-      category: "Italian",
-      level: "Intermediate",
-      instructor: "Marco Rossini",
-      instructorTitle: "Native Italian Speaker",
-      rating: 4.9,
-      totalRatings: 567,
-      students: 2134,
-      duration: "Ongoing",
-      lessons: 24,
-      price: 29,
-      originalPrice: 59,
-      image: "/images/courses/italian-conversation.jpg",
-      tags: ["Speaking", "Conversation", "Native Speaker", "Interactive"],
-      lastUpdated: "2024-03-10",
-      language: "Italian",
-      certificate: false,
-      bestseller: false,
-      new: true
-    },
-    {
-      id: 6,
-      title: "Japanese for Anime Fans",
-      description: "Learn Japanese through your favorite anime! Understand dialogues, cultural references, and everyday expressions.",
-      category: "Japanese",
-      level: "Beginner",
-      instructor: "Sensei Takeshi",
-      instructorTitle: "Japanese Culture Expert",
-      rating: 4.8,
-      totalRatings: 3421,
-      students: 12876,
-      duration: "14 weeks",
-      lessons: 84,
-      price: 69,
-      originalPrice: 119,
-      image: "/images/courses/japanese-anime.jpg",
-      tags: ["Anime", "Culture", "Entertainment", "Popular"],
-      lastUpdated: "2024-02-05",
-      language: "Japanese",
-      certificate: true,
-      bestseller: true,
-      new: false
-    }
-  ]);
-
+  const [courses, setCourses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
@@ -155,8 +18,41 @@ const CourseBrowserPage = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [showFilters, setShowFilters] = useState(false);
 
-  const categories = ['All', 'English', 'Spanish', 'French', 'German', 'Italian', 'Japanese', 'Chinese', 'Korean'];
+  // Fetch courses on component mount
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Fetch all published courses from backend
+      const response = await ApiService.getAllCourses();
+
+      if (response.success) {
+        // Filter only published courses
+        const publishedCourses = (response.data || []).filter(
+          course => course.status === 'published'
+        );
+        setCourses(publishedCourses);
+      } else {
+        throw new Error(response.message || 'Failed to fetch courses');
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Get unique categories from courses
+  const categories = ['All', ...new Set(courses.map(course => course.category).filter(Boolean))];
+
   const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
+
   const priceRanges = [
     { value: 'all', label: 'All Prices' },
     { value: 'free', label: 'Free' },
@@ -165,41 +61,57 @@ const CourseBrowserPage = () => {
     { value: '100+', label: '$100+' }
   ];
 
-  const featuredCourses = courses.filter(course => course.bestseller || course.new).slice(0, 3);
+  // Featured courses (newest or most popular)
+  const featuredCourses = courses
+    .filter(course => course.status === 'published')
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 3);
 
+  // Filter and sort courses
   const filteredCourses = courses
     .filter(course => {
-      const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           course.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           course.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+      const matchesSearch =
+        course.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.category?.toLowerCase().includes(searchTerm.toLowerCase());
+
       const matchesCategory = selectedCategory === 'all' || course.category === selectedCategory;
       const matchesLevel = selectedLevel === 'all' || course.level === selectedLevel;
-      
+
       let matchesPrice = true;
-      if (selectedPrice === 'free') matchesPrice = course.price === 0;
-      else if (selectedPrice === '0-50') matchesPrice = course.price >= 0 && course.price <= 50;
-      else if (selectedPrice === '50-100') matchesPrice = course.price > 50 && course.price <= 100;
-      else if (selectedPrice === '100+') matchesPrice = course.price > 100;
-      
+      const price = course.price || 0;
+      if (selectedPrice === 'free') matchesPrice = price === 0;
+      else if (selectedPrice === '0-50') matchesPrice = price >= 0 && price <= 50;
+      else if (selectedPrice === '50-100') matchesPrice = price > 50 && price <= 100;
+      else if (selectedPrice === '100+') matchesPrice = price > 100;
+
       return matchesSearch && matchesCategory && matchesLevel && matchesPrice;
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'popular': return b.students - a.students;
-        case 'rating': return b.rating - a.rating;
-        case 'price-low': return a.price - b.price;
-        case 'price-high': return b.price - a.price;
-        case 'newest': return new Date(b.lastUpdated) - new Date(a.lastUpdated);
-        case 'alphabetical': return a.title.localeCompare(b.title);
-        default: return 0;
+        case 'popular':
+          return (b.students || 0) - (a.students || 0);
+        case 'rating':
+          return (b.rating || 0) - (a.rating || 0);
+        case 'price-low':
+          return (a.price || 0) - (b.price || 0);
+        case 'price-high':
+          return (b.price || 0) - (a.price || 0);
+        case 'newest':
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        case 'alphabetical':
+          return (a.title || '').localeCompare(b.title || '');
+        default:
+          return 0;
       }
     });
 
   const handleEnroll = (courseId) => {
-    // Simulate enrollment
-    alert(`Enrolled in course ${courseId}! Redirecting to course page...`);
+    // TODO: Implement enrollment logic with backend
+    alert(`Enrolling in course ${courseId}. This will be implemented with your enrollment system.`);
+    // Navigate to course detail page
+    // router.push(`/student/courses/${courseId}`);
   };
 
   const clearFilters = () => {
@@ -209,6 +121,41 @@ const CourseBrowserPage = () => {
     setSelectedPrice('all');
     setSortBy('popular');
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <motion.div
+            className="w-16 h-16 border-4 border-[#FF7D29] border-t-transparent rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="text-gray-600">Loading courses...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+        <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <span className="text-4xl">⚠️</span>
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Courses</h3>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <button
+          onClick={fetchCourses}
+          className="bg-[#FF7D29] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#FF9D5C] transition-all"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -223,9 +170,9 @@ const CourseBrowserPage = () => {
           <div className="max-w-4xl">
             <h1 className="text-4xl font-bold mb-4">Discover Your Next Learning Adventure</h1>
             <p className="text-xl text-blue-100 mb-8">
-              Explore thousands of expert-led courses and start learning something new today
+              Explore {courses.length} expert-led courses and start learning something new today
             </p>
-            
+
             {/* Search Bar */}
             <div className="relative max-w-2xl">
               <input
@@ -246,88 +193,90 @@ const CourseBrowserPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-white bg-opacity-10 rounded-full -translate-y-48 translate-x-48"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-white bg-opacity-5 rounded-full translate-y-32 -translate-x-32"></div>
       </motion.div>
 
       {/* Featured Courses */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Featured Courses</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featuredCourses.map((course, index) => (
-            <motion.div
-              key={course.id}
-              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index }}
-              whileHover={{ scale: 1.02 }}
-            >
-              <div className="relative">
-                <div className="aspect-video bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                  <span className="text-6xl">📚</span>
-                </div>
-                {course.bestseller && (
-                  <span className="absolute top-3 left-3 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    Bestseller
-                  </span>
-                )}
-                {course.new && (
-                  <span className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    New
-                  </span>
-                )}
-              </div>
-              
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                    {course.level}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-yellow-500">⭐</span>
-                    <span className="text-sm font-medium">{course.rating}</span>
-                    <span className="text-sm text-gray-500">({course.totalRatings})</span>
+      {featuredCourses.length > 0 && (
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Featured Courses</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {featuredCourses.map((course, index) => (
+              <motion.div
+                key={course.id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="relative">
+                  <div className="aspect-video bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center overflow-hidden">
+                    {course.image ? (
+                      <img
+                        src={course.image}
+                        alt={course.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <span className="text-6xl">📚</span>
+                  </div>
+                  <div className="absolute top-3 right-3">
+                    <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                      New
+                    </span>
                   </div>
                 </div>
-                
-                <h3 className="font-bold text-lg mb-2 group-hover:text-blue-600 transition-colors">
-                  {course.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {course.description}
-                </p>
-                
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <span>{course.students.toLocaleString()} students</span>
-                  <span>{course.duration}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-[#FF7D29]">${course.price}</span>
-                    {course.originalPrice > course.price && (
-                      <span className="text-sm text-gray-500 line-through">${course.originalPrice}</span>
-                    )}
+
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                      {course.level || 'Beginner'}
+                    </span>
+                    <span className="text-sm text-gray-500">{course.category}</span>
                   </div>
-                  <button
-                    onClick={() => handleEnroll(course.id)}
-                    className="bg-[#FF7D29] text-white px-4 py-2 rounded-lg hover:bg-[#FF9D5C] transition-colors"
-                  >
-                    Enroll Now
-                  </button>
+
+                  <h3 className="font-bold text-lg mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {course.description}
+                  </p>
+
+                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                    <span>{course.students || 0} students</span>
+                    <span>{course.estimatedDuration || 'N/A'}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-[#FF7D29]">
+                        ${course.price || 0}
+                      </span>
+                    </div>
+                    <Link href={`/student/courses/${course.id}`}>
+                      <button className="bg-[#FF7D29] text-white px-4 py-2 rounded-lg hover:bg-[#FF9D5C] transition-colors">
+                        View Course
+                      </button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+      )}
 
       {/* Filters and Course Grid */}
       <motion.section
@@ -454,18 +403,23 @@ const CourseBrowserPage = () => {
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">No courses found</h3>
               <p className="text-gray-600 mb-6">
-                Try adjusting your search or filters to find what you're looking for.
+                {courses.length === 0
+                  ? 'No courses are available yet. Check back soon!'
+                  : 'Try adjusting your search or filters to find what you\'re looking for.'
+                }
               </p>
-              <button
-                onClick={clearFilters}
-                className="bg-[#FF7D29] text-white px-6 py-3 rounded-xl hover:bg-[#FF9D5C] transition-colors"
-              >
-                Clear All Filters
-              </button>
+              {filteredCourses.length !== courses.length && (
+                <button
+                  onClick={clearFilters}
+                  className="bg-[#FF7D29] text-white px-6 py-3 rounded-xl hover:bg-[#FF9D5C] transition-colors"
+                >
+                  Clear All Filters
+                </button>
+              )}
             </motion.div>
           ) : (
-            <div className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' 
+            <div className={viewMode === 'grid'
+              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
               : 'space-y-6'
             }>
               {filteredCourses.map((course, index) => (
@@ -497,73 +451,57 @@ const CourseCardGrid = ({ course, onEnroll }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
       <div className="relative">
-        <div className="aspect-video bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+        <div className="aspect-video bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center overflow-hidden">
+          {course.image ? (
+            <img
+              src={course.image}
+              alt={course.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
           <span className="text-6xl">📚</span>
-        </div>
-        <div className="absolute top-3 left-3 flex gap-2">
-          {course.bestseller && (
-            <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-              Bestseller
-            </span>
-          )}
-          {course.new && (
-            <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-              New
-            </span>
-          )}
         </div>
         <div className="absolute top-3 right-3">
           <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-            {course.level}
+            {course.level || 'Beginner'}
           </span>
         </div>
       </div>
-      
+
       <div className="p-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-gray-500">{course.category}</span>
-          <div className="flex items-center gap-1">
-            <span className="text-yellow-500">⭐</span>
-            <span className="text-sm font-medium">{course.rating}</span>
-            <span className="text-sm text-gray-500">({course.totalRatings})</span>
-          </div>
+          <span className="text-sm text-gray-500">{course.modules || 0} modules</span>
         </div>
-        
+
         <h3 className="font-bold text-lg mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
           {course.title}
         </h3>
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">
           {course.description}
         </p>
-        <p className="text-sm text-gray-500 mb-4">by {course.instructor}</p>
-        
+        <p className="text-sm text-gray-500 mb-4">by {course.instructor || 'Unknown'}</p>
+
         <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-          <span>{course.students.toLocaleString()} students</span>
-          <span>{course.lessons} lessons</span>
-          <span>{course.duration}</span>
+          <span>{course.students || 0} students</span>
+          <span>{course.estimatedDuration || 'N/A'}</span>
         </div>
-        
-        <div className="flex flex-wrap gap-1 mb-4">
-          {course.tags.slice(0, 3).map((tag, index) => (
-            <span key={index} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
-              {tag}
-            </span>
-          ))}
-        </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-[#FF7D29]">${course.price}</span>
-            {course.originalPrice > course.price && (
-              <span className="text-sm text-gray-500 line-through">${course.originalPrice}</span>
-            )}
+            <span className="text-2xl font-bold text-[#FF7D29]">
+              ${course.price || 0}
+            </span>
           </div>
-          <button
-            onClick={() => onEnroll(course.id)}
-            className="bg-[#FF7D29] text-white px-4 py-2 rounded-lg hover:bg-[#FF9D5C] transition-colors"
-          >
-            Enroll
-          </button>
+          <Link href={`/student/courses/${course.id}`}>
+            <button className="bg-[#FF7D29] text-white px-4 py-2 rounded-lg hover:bg-[#FF9D5C] transition-colors">
+              View Details
+            </button>
+          </Link>
         </div>
       </div>
     </div>
@@ -575,65 +513,47 @@ const CourseCardList = ({ course, onEnroll }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
       <div className="flex gap-6">
-        <div className="w-48 h-32 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+        <div className="w-48 h-32 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {course.image ? (
+            <img
+              src={course.image}
+              alt={course.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
           <span className="text-4xl">📚</span>
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <h3 className="font-bold text-xl text-gray-800">{course.title}</h3>
-              <div className="flex gap-2">
-                {course.bestseller && (
-                  <span className="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                    Bestseller
-                  </span>
-                )}
-                {course.new && (
-                  <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                    New
-                  </span>
-                )}
-              </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-xl text-gray-800 mb-1">{course.title}</h3>
+              <p className="text-sm text-gray-500">{course.category} • {course.level || 'Beginner'}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-bold text-[#FF7D29]">${course.price}</span>
-              {course.originalPrice > course.price && (
-                <span className="text-lg text-gray-500 line-through">${course.originalPrice}</span>
-              )}
+            <div className="text-right">
+              <span className="text-3xl font-bold text-[#FF7D29]">${course.price || 0}</span>
             </div>
           </div>
-          
-          <p className="text-gray-600 mb-3">{course.description}</p>
-          
+
+          <p className="text-gray-600 mb-3 line-clamp-2">{course.description}</p>
+
           <div className="flex items-center gap-6 text-sm text-gray-500 mb-3">
-            <span className="flex items-center gap-1">
-              <span className="text-yellow-500">⭐</span>
-              {course.rating} ({course.totalRatings} reviews)
-            </span>
-            <span>{course.students.toLocaleString()} students</span>
-            <span>{course.lessons} lessons</span>
-            <span>{course.duration}</span>
-            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded">{course.level}</span>
+            <span>{course.students || 0} students</span>
+            <span>{course.modules || 0} modules</span>
+            <span>{course.estimatedDuration || 'N/A'}</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-2">by {course.instructor}, {course.instructorTitle}</p>
-              <div className="flex flex-wrap gap-1">
-                {course.tags.map((tag, index) => (
-                  <span key={index} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <button
-              onClick={() => onEnroll(course.id)}
-              className="bg-[#FF7D29] text-white px-6 py-3 rounded-lg hover:bg-[#FF9D5C] transition-colors"
-            >
-              Enroll Now
-            </button>
+            <p className="text-sm text-gray-600">by {course.instructor || 'Unknown'}</p>
+            <Link href={`/student/courses/${course.id}`}>
+              <button className="bg-[#FF7D29] text-white px-6 py-3 rounded-lg hover:bg-[#FF9D5C] transition-colors">
+                View Details
+              </button>
+            </Link>
           </div>
         </div>
       </div>
