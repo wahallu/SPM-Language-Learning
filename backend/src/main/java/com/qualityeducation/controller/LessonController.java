@@ -25,6 +25,45 @@ public class LessonController {
     private final LessonService lessonService;
     private final JwtService jwtService;
 
+    // Public endpoint to get all published lessons (no authentication required)
+    @GetMapping("/public/all")
+    public ResponseEntity<ApiResponse<List<LessonResponse>>> getAllPublishedLessons() {
+        try {
+            log.info("Fetching all published lessons (public access)");
+            ApiResponse<List<LessonResponse>> response = lessonService.getAllPublishedLessons();
+
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching published lessons", e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Failed to retrieve published lessons", e.getMessage()));
+        }
+    }
+
+    // Public endpoint to get a single published lesson by ID (no authentication required)
+    @GetMapping("/public/{lessonId}")
+    public ResponseEntity<ApiResponse<LessonResponse>> getPublishedLessonById(
+            @PathVariable String lessonId) {
+        try {
+            log.info("Fetching published lesson: {} (public access)", lessonId);
+            ApiResponse<LessonResponse> response = lessonService.getPublishedLessonById(lessonId);
+
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching published lesson: {}", lessonId, e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Failed to retrieve lesson", e.getMessage()));
+        }
+    }
+
     @PostMapping("/modules/{moduleId}")
     public ResponseEntity<ApiResponse<LessonResponse>> createLesson(
             @PathVariable String moduleId,

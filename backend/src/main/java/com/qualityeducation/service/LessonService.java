@@ -27,6 +27,60 @@ public class LessonService {
     private final ModuleRepository moduleRepository;
     private final CourseRepository courseRepository;
 
+    // Public method to get all published lessons
+    public ApiResponse<List<LessonResponse>> getAllPublishedLessons() {
+        try {
+            log.info("Fetching all published lessons");
+
+            List<Lesson> publishedLessons = lessonRepository.findByStatusOrderByCreatedAtDesc(Lesson.LessonStatus.PUBLISHED);
+            
+            List<LessonResponse> responses = publishedLessons.stream()
+                    .map(lesson -> {
+                        LessonResponse response = LessonResponse.fromLesson(lesson);
+                        // Add instructor name from teacher ID if needed
+                        return response;
+                    })
+                    .collect(Collectors.toList());
+
+            log.info("Found {} published lessons", responses.size());
+            return ApiResponse.success("Published lessons retrieved successfully", responses);
+
+        } catch (Exception e) {
+            log.error("Failed to fetch published lessons", e);
+            return ApiResponse.error("Failed to retrieve published lessons: " + e.getMessage());
+        }
+    }
+
+    // Public method to get a published lesson by ID
+    public ApiResponse<LessonResponse> getPublishedLessonById(String lessonId) {
+        try {
+            log.info("Fetching published lesson: {}", lessonId);
+
+            Optional<Lesson> lessonOpt = lessonRepository.findById(lessonId);
+            if (lessonOpt.isEmpty()) {
+                return ApiResponse.error("Lesson not found with ID: " + lessonId);
+            }
+
+            Lesson lesson = lessonOpt.get();
+
+            // Check if lesson is published
+            if (lesson.getStatus() != Lesson.LessonStatus.PUBLISHED) {
+                return ApiResponse.error("Lesson is not published");
+            }
+
+            // Increment view count
+            lesson.incrementViews();
+            lessonRepository.save(lesson);
+
+            LessonResponse response = LessonResponse.fromLesson(lesson);
+            return ApiResponse.success("Lesson retrieved successfully", response);
+
+        } catch (Exception e) {
+            log.error("Failed to fetch published lesson: {}", lessonId, e);
+            return ApiResponse.error("Failed to retrieve lesson: " + e.getMessage());
+        }
+    }
+
     @Transactional
     public ApiResponse<LessonResponse> createLesson(String moduleId, LessonRequest request, String teacherId) {
         try {
@@ -35,7 +89,7 @@ public class LessonService {
             // Validate module exists and belongs to teacher
             Optional<Module> moduleOpt = moduleRepository.findById(moduleId);
             if (moduleOpt.isEmpty()) {
-                return ApiResponse.error("Module not found");
+                return ApiResponse.error("Module not found with ID: " + moduleId);
             }
 
             Module module = moduleOpt.get();
@@ -53,12 +107,12 @@ public class LessonService {
 
             // Check if lesson title already exists in this module
             if (lessonRepository.existsByModuleIdAndTitleIgnoreCase(moduleId, request.getTitle())) {
-                return ApiResponse.error("A lesson with this title already exists in this module");
+                return ApiResponse.error("A lesson with this title already exists in the module");
             }
 
             // Check if lesson order already exists in this module
             if (lessonRepository.existsByModuleIdAndOrder(moduleId, request.getOrder())) {
-                return ApiResponse.error("A lesson with this order already exists in this module");
+                return ApiResponse.error("A lesson with this order already exists in the module");
             }
 
             // Create lesson
