@@ -6,6 +6,7 @@ import com.qualityeducation.dto.CourseResponse;
 import com.qualityeducation.service.CourseService;
 import com.qualityeducation.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,8 +29,7 @@ public class CourseController {
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<CourseResponse>> createCourse(
             @RequestBody CourseRequest request,
-            @RequestHeader(value = "Authorization", required = false) String token) { // Make optional for better error
-                                                                                      // handling
+            @RequestHeader(value = "Authorization", required = false) String token) {
         try {
             String teacherId = extractTeacherIdFromToken(token);
             CourseResponse course = courseService.createCourse(request, teacherId);
@@ -111,10 +111,10 @@ public class CourseController {
     public ResponseEntity<ApiResponse<List<CourseResponse>>> getAllPublishedCourses() {
         try {
             List<CourseResponse> courses = courseService.getAllPublishedCourses();
-            return ResponseEntity.ok(new ApiResponse<>(true, "Published courses retrieved successfully", courses));
+            return ResponseEntity.ok(ApiResponse.success("Published courses retrieved successfully", courses));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "Error retrieving courses: " + e.getMessage(), null));
+                    .body(ApiResponse.error("Error retrieving courses", e.getMessage()));
         }
     }
 
@@ -128,10 +128,10 @@ public class CourseController {
             @RequestParam(required = false) String level) {
         try {
             List<CourseResponse> courses = courseService.searchPublishedCourses(searchTerm, category, level);
-            return ResponseEntity.ok(new ApiResponse<>(true, "Courses found successfully", courses));
+            return ResponseEntity.ok(ApiResponse.success("Courses found successfully", courses));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "Error searching courses: " + e.getMessage(), null));
+                    .body(ApiResponse.error("Error searching courses", e.getMessage()));
         }
     }
 

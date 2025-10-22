@@ -73,10 +73,12 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Add this line
-                .authorizeHttpRequests(authz -> authz
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/supervisor/register", "/api/supervisor/login").permitAll()
-                        .requestMatchers("/api/teacher/register", "/api/teacher/login").permitAll()
+                        .requestMatchers("/api/teacher/login", "/api/teacher/register").permitAll()
+                        .requestMatchers("/api/supervisor/login", "/api/supervisor/register").permitAll()
+                        .requestMatchers("/api/courses/public/**").permitAll() // Add this line
+                        .requestMatchers("/api/lessons/public/**").permitAll()
                         .requestMatchers("/api/courses/**").hasAnyRole("TEACHER", "SUPERVISOR") // Add this line
                         .requestMatchers("/api/supervisor/**").hasRole("SUPERVISOR")
                         .requestMatchers("/api/teacher/**").hasAnyRole("TEACHER", "SUPERVISOR")

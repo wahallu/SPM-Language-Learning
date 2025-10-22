@@ -99,6 +99,41 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
 
+    public List<CourseResponse> getAllPublishedCourses() {
+        List<Course> courses = courseRepository.findByStatus("published");
+        return courses.stream()
+                .map(this::mapToCourseResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<CourseResponse> searchPublishedCourses(String searchTerm, String category, String level) {
+        List<Course> courses = courseRepository.findByStatus("published");
+        
+        return courses.stream()
+                .filter(course -> {
+                    boolean matches = true;
+                    
+                    if (searchTerm != null && !searchTerm.isEmpty()) {
+                        String term = searchTerm.toLowerCase();
+                        matches = course.getTitle().toLowerCase().contains(term) ||
+                                course.getDescription().toLowerCase().contains(term) ||
+                                course.getCategory().toLowerCase().contains(term);
+                    }
+                    
+                    if (category != null && !category.isEmpty() && !category.equals("all")) {
+                        matches = matches && course.getCategory().equalsIgnoreCase(category);
+                    }
+                    
+                    if (level != null && !level.isEmpty() && !level.equals("all")) {
+                        matches = matches && course.getLevel().equalsIgnoreCase(level);
+                    }
+                    
+                    return matches;
+                })
+                .map(this::mapToCourseResponse)
+                .collect(Collectors.toList());
+    }
+
     public CourseResponse updateCourse(String courseId, CourseRequest request) {
         Optional<Course> optionalCourse = courseRepository.findById(courseId);
         if (optionalCourse.isPresent()) {

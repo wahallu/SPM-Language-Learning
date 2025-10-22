@@ -28,15 +28,11 @@ const CourseBrowserPage = () => {
       setIsLoading(true);
       setError(null);
 
-      // Fetch all published courses from backend
+      // Fetch all published courses from backend (public endpoint)
       const response = await ApiService.getAllCourses();
 
       if (response.success) {
-        // Filter only published courses
-        const publishedCourses = (response.data || []).filter(
-          course => course.status === 'published'
-        );
-        setCourses(publishedCourses);
+        setCourses(response.data || []);
       } else {
         throw new Error(response.message || 'Failed to fetch courses');
       }

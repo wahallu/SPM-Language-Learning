@@ -131,9 +131,27 @@ class ApiService {
   }
 
   static async getAllCourses() {
-    const response = await fetch(`${API_BASE_URL}/courses`, {
+    const response = await fetch(`${API_BASE_URL}/courses/public/all`, {
       method: 'GET',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return this.handleResponse(response);
+  }
+
+  static async searchCourses(filters = {}) {
+    const params = new URLSearchParams();
+
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.category && filters.category !== 'all') params.append('category', filters.category);
+    if (filters.level && filters.level !== 'all') params.append('level', filters.level);
+
+    const response = await fetch(`${API_BASE_URL}/courses/public/search?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     return this.handleResponse(response);
   }
@@ -667,7 +685,7 @@ class ApiService {
    */
   static async searchPublishedLessons(filters = {}) {
     const params = new URLSearchParams();
-    
+
     if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
     if (filters.category) params.append('category', filters.category);
     if (filters.level) params.append('level', filters.level);
