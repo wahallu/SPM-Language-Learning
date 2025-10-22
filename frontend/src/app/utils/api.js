@@ -572,6 +572,41 @@ class ApiService {
     return this.handleResponse(response);
   }
 
+  // =================== STUDENT MANAGEMENT APIs ===================
+
+  /**
+   * Get all students enrolled in teacher's courses
+   */
+  static async getTeacherStudents() {
+    const response = await fetch(`${API_BASE_URL}/teacher/students`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Get student details with course progress
+   */
+  static async getStudentDetails(studentId) {
+    const response = await fetch(`${API_BASE_URL}/teacher/students/${studentId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Get student progress in a specific course
+   */
+  static async getStudentCourseProgress(studentId, courseId) {
+    const response = await fetch(`${API_BASE_URL}/teacher/students/${studentId}/courses/${courseId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
   // Logout utility
   static logout() {
     if (typeof window !== 'undefined') {

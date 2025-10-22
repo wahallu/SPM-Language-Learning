@@ -181,8 +181,8 @@ public class JwtService {
             Claims claims = extractAllClaims(token);
             return claims.get("supervisorId", String.class);
         } catch (Exception e) {
-            log.error("Failed to extract supervisor ID from token: {}", e.getMessage());
-            throw new RuntimeException("Invalid token");
+            log.error("Failed to extract supervisor ID from token", e);
+            return null;
         }
     }
 
@@ -192,8 +192,8 @@ public class JwtService {
             Claims claims = extractAllClaims(token);
             return claims.get("teacherId", String.class);
         } catch (Exception e) {
-            log.error("Failed to extract teacher ID from token: {}", e.getMessage());
-            throw new RuntimeException("Invalid token");
+            log.error("Failed to extract teacher ID from token", e);
+            return null;
         }
     }
 

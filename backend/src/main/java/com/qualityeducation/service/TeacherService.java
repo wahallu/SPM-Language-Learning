@@ -1,8 +1,8 @@
 package com.qualityeducation.service;
 
 import com.qualityeducation.dto.*;
-import com.qualityeducation.model.Teacher;
-import com.qualityeducation.repository.TeacherRepository;
+import com.qualityeducation.model.*;
+import com.qualityeducation.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,9 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +26,11 @@ public class TeacherService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
+    private final EnrollmentRepository enrollmentRepository;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
+    private final ModuleRepository moduleRepository;
+    private final LessonRepository lessonRepository;
 
     public ApiResponse<TeacherResponse> registerTeacher(TeacherRegistrationRequest request) {
         try {
@@ -282,6 +285,234 @@ public class TeacherService {
         } catch (Exception e) {
             log.error("Failed to process forgot password for email: {}", email, e);
             return ApiResponse.error("Failed to process password reset request", null);
+        }
+    }
+
+    /**
+     * Get all students enrolled in teacher's courses
+     */
+    public ApiResponse<List<StudentEnrollmentResponse>> getTeacherStudents(String teacherId) {
+        try {
+            log.info("Fetching students for teacher: {}", teacherId);
+
+            // Get all enrollments for this teacher's courses
+            List<Enrollment> enrollments = enrollmentRepository.findByTeacherId(teacherId);
+
+            // Group enrollments by student
+            Map<String, List<Enrollment>> enrollmentsByStudent = enrollments.stream()
+                    .collect(Collectors.groupingBy(Enrollment::getStudentId));
+
+            List<StudentEnrollmentResponse> students = new ArrayList<>();
+
+            for (Map.Entry<String, List<Enrollment>> entry : enrollmentsByStudent.entrySet()) {
+                String studentId = entry.getKey();
+                List<Enrollment> studentEnrollments = entry.getValue();
+
+                // Get student details
+                Optional<User> studentOpt = userRepository.findById(studentId);
+                if (studentOpt.isEmpty()) {
+                    log.warn("Student not found: {}", studentId);
+                    continue;
+                }
+
+                User student = studentOpt.get();
+
+                // Build course enrollment list
+                List<StudentEnrollmentResponse.CourseEnrollment> courseEnrollments = new ArrayList<>();
+                
+                for (Enrollment enrollment : studentEnrollments) {
+                    Optional<Course> courseOpt = courseRepository.findById(enrollment.getCourseId());
+                    if (courseOpt.isEmpty()) continue;
+                    
+                    Course course = courseOpt.get();
+                    
+                    courseEnrollments.add(StudentEnrollmentResponse.CourseEnrollment.builder()
+                            .id(course.getId())
+                            .title(course.getTitle())
+                            .category(course.getCategory())
+                            .progress(enrollment.getProgress())
+                            .grade(enrollment.getGrade())
+                            .status(enrollment.getStatus())
+                            .completedLessons(enrollment.getCompletedLessons())
+                            .totalLessons(enrollment.getTotalLessons())
+                            .lastActivity(enrollment.getLastActivity())
+                            .build());
+                }
+
+                // Get earliest enrollment date
+                LocalDateTime enrolledDate = studentEnrollments.stream()
+                        .map(Enrollment::getEnrolledDate)
+                        .min(LocalDateTime::compareTo)
+                        .orElse(LocalDateTime.now());
+
+                students.add(StudentEnrollmentResponse.builder()
+                        .id(student.getId())
+                        .name(student.getUsername()) // or firstName + lastName if available
+                        .email(student.getEmail())
+                        .avatar(null) // Add avatar field to User model if needed
+                        .enrolledDate(enrolledDate)
+                        .courses(courseEnrollments)
+                        .build());
+            }
+
+            // Sort students by name
+            students.sort(Comparator.comparing(StudentEnrollmentResponse::getName));
+
+            log.info("Found {} students for teacher {}", students.size(), teacherId);
+            return ApiResponse.success("Students retrieved successfully", students);
+
+        } catch (Exception e) {
+            log.error("Error fetching students for teacher {}: {}", teacherId, e.getMessage(), e);
+            return ApiResponse.error("Failed to retrieve students", e.getMessage());
+        }
+    }
+
+    /**
+     * Get detailed information about a specific student
+     */
+    public ApiResponse<StudentDetailsResponse> getStudentDetails(String studentId, String teacherId) {
+        try {
+            log.info("Fetching details for student {} by teacher {}", studentId, teacherId);
+
+            // Get student
+            Optional<User> studentOpt = userRepository.findById(studentId);
+            if (studentOpt.isEmpty()) {
+                return ApiResponse.error("Student not found");
+            }
+            User student = studentOpt.get();
+
+            // Get all enrollments for this student in teacher's courses
+            List<Enrollment> enrollments = enrollmentRepository.findByTeacherId(teacherId).stream()
+                    .filter(e -> e.getStudentId().equals(studentId))
+                    .collect(Collectors.toList());
+
+            if (enrollments.isEmpty()) {
+                return ApiResponse.error("Student is not enrolled in any of your courses");
+            }
+
+            // Calculate overall stats
+            int totalCourses = enrollments.size();
+            int completedCourses = (int) enrollments.stream()
+                    .filter(e -> "completed".equals(e.getStatus()))
+                    .count();
+            int activeCourses = (int) enrollments.stream()
+                    .filter(e -> "active".equals(e.getStatus()))
+                    .count();
+            
+            double averageProgress = enrollments.stream()
+                    .mapToInt(Enrollment::getProgress)
+                    .average()
+                    .orElse(0.0);
+            
+            double averageScore = enrollments.stream()
+                    .filter(e -> e.getQuizStats() != null)
+                    .mapToDouble(e -> e.getQuizStats().getAverageScore())
+                    .average()
+                    .orElse(0.0);
+            
+            int totalLessonsCompleted = enrollments.stream()
+                    .mapToInt(Enrollment::getCompletedLessons)
+                    .sum();
+            
+            int currentStreak = enrollments.stream()
+                    .mapToInt(Enrollment::getCurrentStreak)
+                    .max()
+                    .orElse(0);
+
+            StudentDetailsResponse.StudentStats stats = StudentDetailsResponse.StudentStats.builder()
+                    .totalCourses(totalCourses)
+                    .completedCourses(completedCourses)
+                    .activeCourses(activeCourses)
+                    .averageProgress(Math.round(averageProgress * 100.0) / 100.0)
+                    .averageScore(Math.round(averageScore * 100.0) / 100.0)
+                    .totalLessonsCompleted(totalLessonsCompleted)
+                    .currentStreak(currentStreak)
+                    .build();
+
+            // Build course progress list
+            List<StudentDetailsResponse.CourseProgress> courseProgressList = new ArrayList<>();
+            
+            for (Enrollment enrollment : enrollments) {
+                Optional<Course> courseOpt = courseRepository.findById(enrollment.getCourseId());
+                if (courseOpt.isEmpty()) continue;
+                
+                Course course = courseOpt.get();
+                
+                // Get lessons for this course
+                List<Module> modules = moduleRepository.findByCourseIdOrderByOrderAsc(course.getId());
+                List<Lesson> allLessons = new ArrayList<>();
+                for (Module module : modules) {
+                    allLessons.addAll(lessonRepository.findByModuleIdOrderByOrderAsc(module.getId()));
+                }
+                
+                // Build lesson progress list
+                List<StudentDetailsResponse.LessonProgress> lessonProgressList = allLessons.stream()
+                        .map(lesson -> {
+                            Enrollment.LessonProgress lp = enrollment.getLessonProgress().stream()
+                                    .filter(progress -> progress.getLessonId().equals(lesson.getId()))
+                                    .findFirst()
+                                    .orElse(null);
+                            
+                            return StudentDetailsResponse.LessonProgress.builder()
+                                    .id(lesson.getId())
+                                    .title(lesson.getTitle())
+                                    .completed(lp != null && lp.isCompleted())
+                                    .progress(lp != null ? lp.getProgress() : 0)
+                                    .completedAt(lp != null ? lp.getCompletedAt() : null)
+                                    .quizScore(lp != null ? lp.getQuizScore() : 0)
+                                    .timeSpent(lp != null ? lp.getTimeSpent() : 0)
+                                    .build();
+                        })
+                        .collect(Collectors.toList());
+                
+                // Build quiz stats
+                Enrollment.QuizStats enrollmentQuizStats = enrollment.getQuizStats();
+                StudentDetailsResponse.QuizStats quizStats = StudentDetailsResponse.QuizStats.builder()
+                        .totalQuizzes(enrollmentQuizStats != null ? enrollmentQuizStats.getTotalQuizzes() : 0)
+                        .completedQuizzes(enrollmentQuizStats != null ? enrollmentQuizStats.getCompletedQuizzes() : 0)
+                        .averageScore(enrollmentQuizStats != null ? enrollmentQuizStats.getAverageScore() : 0.0)
+                        .bestScore(enrollmentQuizStats != null ? enrollmentQuizStats.getBestScore() : 0)
+                        .totalAttempts(enrollmentQuizStats != null ? enrollmentQuizStats.getTotalAttempts() : 0)
+                        .build();
+                
+                courseProgressList.add(StudentDetailsResponse.CourseProgress.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .category(course.getCategory())
+                        .progress(enrollment.getProgress())
+                        .grade(enrollment.getGrade())
+                        .status(enrollment.getStatus())
+                        .completedLessons(enrollment.getCompletedLessons())
+                        .totalLessons(enrollment.getTotalLessons())
+                        .enrolledDate(enrollment.getEnrolledDate())
+                        .lastActivity(enrollment.getLastActivity())
+                        .lessons(lessonProgressList)
+                        .quizStats(quizStats)
+                        .build());
+            }
+
+            // Get earliest enrollment date
+            LocalDateTime enrolledDate = enrollments.stream()
+                    .map(Enrollment::getEnrolledDate)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(LocalDateTime.now());
+
+            StudentDetailsResponse response = StudentDetailsResponse.builder()
+                    .id(student.getId())
+                    .name(student.getUsername())
+                    .email(student.getEmail())
+                    .avatar(null) // Add avatar field if available
+                    .enrolledDate(enrolledDate)
+                    .stats(stats)
+                    .courses(courseProgressList)
+                    .build();
+
+            return ApiResponse.success("Student details retrieved successfully", response);
+
+        } catch (Exception e) {
+            log.error("Error fetching student details for {} by teacher {}: {}", 
+                     studentId, teacherId, e.getMessage(), e);
+            return ApiResponse.error("Failed to retrieve student details", e.getMessage());
         }
     }
 

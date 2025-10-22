@@ -1,22 +1,131 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
+import ApiService from "@/app/utils/api";
 
 const StudentsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCourse, setFilterCourse] = useState("all");
   const [filterProgress, setFilterProgress] = useState("all");
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data for students enrolled in teacher's courses
-  const [students, setStudents] = useState([
+  useEffect(() => {
+    fetchStudentsData();
+  }, []);
+
+  const fetchStudentsData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Get teacher info from localStorage
+      const teacherData = JSON.parse(localStorage.getItem("teacherData") || "{}");
+      const teacherId = teacherData.id;
+
+      if (!teacherId) {
+        throw new Error("Teacher ID not found. Please log in again.");
+      }
+
+      // Fetch courses created by the teacher
+      const coursesResponse = await ApiService.getCoursesByTeacher(teacherId);
+
+      if (coursesResponse.success && coursesResponse.data) {
+        const teacherCourses = coursesResponse.data;
+        setCourses(teacherCourses);
+
+        // For now, we'll use mock student data until you implement the backend endpoint
+        // In a real implementation, you would fetch this from the backend
+        const mockStudentsData = await generateMockStudentsFromCourses(teacherCourses);
+        setStudents(mockStudentsData);
+      } else {
+        throw new Error("Failed to fetch courses");
+      }
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      setError(error.message || "Failed to load students data");
+
+      // Fallback to mock data
+      setStudents(getMockStudents());
+      setCourses(getMockCourses());
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper function to generate mock student data based on real courses
+  const generateMockStudentsFromCourses = async (teacherCourses) => {
+    // This is temporary - you should implement a real backend endpoint
+    return [
+      {
+        id: 1,
+        name: "Sarah Johnson",
+        email: "sarah.johnson@example.com",
+        avatar: null,
+        enrolledDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+        courses: teacherCourses.slice(0, 2).map((course, index) => ({
+          id: course.id,
+          title: course.title,
+          category: course.category,
+          progress: index === 0 ? 85 : 45,
+          grade: index === 0 ? "A" : "B+",
+          status: "active",
+          completedLessons: index === 0 ? 20 : 16,
+          totalLessons: 24,
+          lastActivity: new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString(),
+        })),
+      },
+      {
+        id: 2,
+        name: "David Chen",
+        email: "david.chen@example.com",
+        avatar: null,
+        enrolledDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+        courses: teacherCourses.slice(0, 1).map((course) => ({
+          id: course.id,
+          title: course.title,
+          category: course.category,
+          progress: 62,
+          grade: "B",
+          status: "active",
+          completedLessons: 15,
+          totalLessons: 24,
+          lastActivity: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        })),
+      },
+      {
+        id: 3,
+        name: "Emma Williams",
+        email: "emma.williams@example.com",
+        avatar: null,
+        enrolledDate: new Date(Date.now() - 70 * 24 * 60 * 60 * 1000).toISOString(),
+        courses: teacherCourses.slice(0, 1).map((course) => ({
+          id: course.id,
+          title: course.title,
+          category: course.category,
+          progress: 100,
+          grade: "A+",
+          status: "completed",
+          completedLessons: 30,
+          totalLessons: 30,
+          lastActivity: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        })),
+      },
+    ];
+  };
+
+  // Fallback mock data functions
+  const getMockStudents = () => [
     {
       id: 1,
       name: "Sarah Johnson",
       email: "sarah.johnson@example.com",
-      avatar: null, // You can add avatar URLs later
+      avatar: null,
       enrolledDate: "2024-01-15",
       courses: [
         {
@@ -30,117 +139,12 @@ const StudentsPage = () => {
           totalLessons: 24,
           lastActivity: "2024-03-20",
         },
-        {
-          id: 2,
-          title: "Advanced Conversation",
-          category: "Spanish",
-          progress: 45,
-          grade: "B+",
-          status: "active",
-          completedLessons: 16,
-          totalLessons: 36,
-          lastActivity: "2024-03-18",
-        },
       ],
     },
-    {
-      id: 2,
-      name: "David Chen",
-      email: "david.chen@example.com",
-      avatar: null,
-      enrolledDate: "2024-02-03",
-      courses: [
-        {
-          id: 1,
-          title: "Beginner Basics",
-          category: "English",
-          progress: 62,
-          grade: "B",
-          status: "active",
-          completedLessons: 15,
-          totalLessons: 24,
-          lastActivity: "2024-03-15",
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Emma Williams",
-      email: "emma.williams@example.com",
-      avatar: null,
-      enrolledDate: "2024-01-20",
-      courses: [
-        {
-          id: 4,
-          title: "German Grammar Mastery",
-          category: "German",
-          progress: 100,
-          grade: "A+",
-          status: "completed",
-          completedLessons: 30,
-          totalLessons: 30,
-          lastActivity: "2024-03-10",
-        },
-      ],
-    },
-    {
-      id: 4,
-      name: "James Brown",
-      email: "james.brown@example.com",
-      avatar: null,
-      enrolledDate: "2024-02-15",
-      courses: [
-        {
-          id: 1,
-          title: "Beginner Basics",
-          category: "English",
-          progress: 32,
-          grade: "C+",
-          status: "at risk",
-          completedLessons: 8,
-          totalLessons: 24,
-          lastActivity: "2024-03-01",
-        },
-        {
-          id: 2,
-          title: "Advanced Conversation",
-          category: "Spanish",
-          progress: 15,
-          grade: "D",
-          status: "at risk",
-          completedLessons: 5,
-          totalLessons: 36,
-          lastActivity: "2024-02-25",
-        },
-      ],
-    },
-    {
-      id: 5,
-      name: "Sophia Garcia",
-      email: "sophia.garcia@example.com",
-      avatar: null,
-      enrolledDate: "2024-03-01",
-      courses: [
-        {
-          id: 2,
-          title: "Advanced Conversation",
-          category: "Spanish",
-          progress: 72,
-          grade: "B+",
-          status: "active",
-          completedLessons: 26,
-          totalLessons: 36,
-          lastActivity: "2024-03-21",
-        },
-      ],
-    },
-  ]);
+  ];
 
-  // Get unique courses for filter dropdown
-  const courses = [
+  const getMockCourses = () => [
     { id: 1, title: "Beginner Basics", category: "English" },
-    { id: 2, title: "Advanced Conversation", category: "Spanish" },
-    { id: 4, title: "German Grammar Mastery", category: "German" },
   ];
 
   // Filter students based on search term and filters
@@ -193,15 +197,48 @@ const StudentsPage = () => {
   };
 
   const getGradeColor = (grade) => {
-    if (grade.startsWith("A")) return "text-green-600";
-    if (grade.startsWith("B")) return "text-blue-600";
-    if (grade.startsWith("C")) return "text-yellow-600";
+    if (grade?.startsWith("A")) return "text-green-600";
+    if (grade?.startsWith("B")) return "text-blue-600";
+    if (grade?.startsWith("C")) return "text-yellow-600";
     return "text-red-600";
   };
 
   const closeStudentDetails = () => {
     setSelectedStudent(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <motion.div
+            className="w-16 h-16 border-4 border-[#FF7D29] border-t-transparent rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="text-gray-600">Loading students data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+        <div className="text-red-500 text-6xl mb-4">⚠️</div>
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          Error Loading Data
+        </h2>
+        <p className="text-gray-600 mb-4">{error}</p>
+        <button
+          onClick={fetchStudentsData}
+          className="bg-[#FF7D29] text-white px-6 py-2 rounded-lg hover:bg-[#FF9D5C] transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -217,6 +254,25 @@ const StudentsPage = () => {
             Manage and track all your students in one place
           </p>
         </div>
+        <button
+          onClick={fetchStudentsData}
+          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Refresh
+        </button>
       </motion.div>
 
       {/* Stats Cards */}
@@ -358,7 +414,9 @@ const StudentsPage = () => {
               No students found
             </h3>
             <p className="text-gray-600 mb-6">
-              Try adjusting your search or filters
+              {students.length === 0
+                ? "No students are enrolled in your courses yet"
+                : "Try adjusting your search or filters"}
             </p>
           </div>
         ) : (
@@ -527,7 +585,7 @@ const StudentsPage = () => {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 50 }}
-              className="fixed inset-x-0 top-20 mx-auto z-50 w-full max-w-4xl rounded-xl bg-white shadow-2xl overflow-hidden"
+              className="fixed inset-x-0 top-20 mx-auto z-50 w-full max-w-4xl rounded-xl bg-white shadow-2xl overflow-hidden max-h-[80vh] overflow-y-auto"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
