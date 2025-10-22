@@ -1,196 +1,88 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Header from "../../Components/layout/Header";
 import Footer from "../../Components/layout/Footer";
 import { motion } from "motion/react";
+import ApiService from "../../utils/api";
 
 const LessonDetail = () => {
   const params = useParams();
   const router = useRouter();
-  const lessonId = parseInt(params.id);
+  const lessonId = params.id;
 
-  // This would typically come from an API, but for now we'll hardcode the lessons data
-  const lessonsData = [
-    {
-      id: 1,
-      title: "Beginner Basics",
-      category: "English",
-      instructor: "Dr. Maria Rodriguez",
-      instructorTitle: "Language Expert",
-      image: "/images/lessons/beginner-basics.png",
-      level: "Beginner",
-      description:
-        "This course is designed for absolute beginners to English. You'll learn essential vocabulary, basic grammar structures, and simple conversational phrases to start your language journey.",
-      duration: "4 weeks",
-      modules: 12,
-      learningPoints: [
-        "Basic greetings and introductions",
-        "Essential vocabulary for everyday situations",
-        "Simple sentence structures",
-        "Numbers, colors, and common objects",
-        "Basic question formation",
-      ],
-    },
-    {
-      id: 2,
-      title: "Conversation Skills",
-      category: "Sinhala",
-      instructor: "Dr. Maria Rodriguez",
-      instructorTitle: "Language Expert",
-      image: "/images/lessons/conversation.png",
-      level: "Intermediate",
-      description:
-        "Take your Sinhala speaking skills to the next level with this conversation-focused course. Practice dialogues, learn idioms, and gain confidence in various social situations.",
-      duration: "6 weeks",
-      modules: 18,
-      learningPoints: [
-        "Engaging in everyday conversations",
-        "Sinhala idioms and expressions",
-        "Speaking fluently about various topics",
-        "Active listening techniques",
-        "Cultural context for natural communication",
-      ],
-    },
-    {
-      id: 3,
-      title: "Grammar Fundamentals",
-      category: "Tamil",
-      instructor: "Prof. James Chen",
-      instructorTitle: "Grammar Specialist",
-      image: "/images/lessons/grammar.png",
-      level: "Beginner",
-      description:
-        "Master the essential grammar rules of Tamil with clear explanations and plenty of practical exercises. This course builds a solid foundation for further language learning.",
-      duration: "5 weeks",
-      modules: 15,
-      learningPoints: [
-        "Tamil sentence structure and word order",
-        "Verb conjugation and tenses",
-        "Noun cases and gender",
-        "Pronouns and articles",
-        "Forming questions and negations",
-      ],
-    },
-    {
-      id: 4,
-      title: "Pronunciation Guide",
-      category: "English",
-      instructor: "Sarah Thompson",
-      instructorTitle: "Accent Coach",
-      image: "/images/lessons/pronunciation.png",
-      level: "All Levels",
-      description:
-        "Improve your English pronunciation with targeted practice on difficult sounds, rhythm, and intonation. Suitable for learners at any level who want to sound more natural.",
-      duration: "3 weeks",
-      modules: 10,
-      learningPoints: [
-        "Mastering challenging English sounds",
-        "Word stress and sentence rhythm",
-        "Intonation patterns for questions and statements",
-        "Linking sounds in natural speech",
-        "Reducing accent and improving clarity",
-      ],
-    },
-    {
-      id: 5,
-      title: "Vocabulary Builder",
-      category: "Sinhala",
-      instructor: "Prof. James Chen",
-      instructorTitle: "Language Expert",
-      image: "/images/lessons/vocabulary.png",
-      level: "Beginner",
-      description:
-        "Expand your Sinhala vocabulary with this comprehensive course covering essential words and phrases for everyday situations, organized by theme for easy learning.",
-      duration: "4 weeks",
-      modules: 12,
-      learningPoints: [
-        "Food and dining vocabulary",
-        "Travel and transportation terms",
-        "Family and relationships",
-        "Work and professional settings",
-        "Shopping and services",
-      ],
-    },
-    {
-      id: 6,
-      title: "Cultural Context",
-      category: "Tamil",
-      instructor: "Dr. Maria Rodriguez",
-      instructorTitle: "Cultural Specialist",
-      image: "/images/lessons/culture.png",
-      level: "Intermediate",
-      description:
-        "Learn Tamil while exploring the rich cultural heritage of Tamil-speaking regions. Understand cultural nuances, traditions, and history to enhance your language skills.",
-      duration: "5 weeks",
-      modules: 15,
-      learningPoints: [
-        "Tamil traditions and festivals",
-        "Cultural etiquette and customs",
-        "Literature and arts vocabulary",
-        "Historical context and cultural references",
-        "Regional variations in language and culture",
-      ],
-    },
-    {
-      id: 7,
-      title: "Reading Comprehension",
-      category: "English",
-      instructor: "Sarah Thompson",
-      instructorTitle: "Reading Coach",
-      image: "/images/lessons/reading.png",
-      level: "Advanced",
-      description:
-        "Develop advanced English reading skills through progressively challenging texts. Learn strategies for understanding complex material and expanding your vocabulary.",
-      duration: "6 weeks",
-      modules: 18,
-      learningPoints: [
-        "Skimming and scanning techniques",
-        "Critical reading and analysis",
-        "Understanding context and inference",
-        "Academic and professional text comprehension",
-        "Building vocabulary through context",
-      ],
-    },
-    {
-      id: 8,
-      title: "Writing Essentials",
-      category: "Sinhala",
-      instructor: "Prof. James Chen",
-      instructorTitle: "Writing Expert",
-      image: "/images/lessons/writing.png",
-      level: "Intermediate",
-      description:
-        "Master the fundamentals of written Sinhala through guided practice. Learn to write clear, grammatically correct sentences and structure coherent paragraphs.",
-      duration: "5 weeks",
-      modules: 15,
-      learningPoints: [
-        "Sinhala script and writing system",
-        "Sentence construction and paragraph development",
-        "Common writing formats (letters, essays, etc.)",
-        "Grammar and punctuation in writing",
-        "Expressing ideas clearly and concisely",
-      ],
-    },
-  ];
+  const [lesson, setLesson] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const lesson = lessonsData.find((l) => l.id === lessonId);
+  useEffect(() => {
+    if (lessonId) {
+      fetchLessonDetails();
+    }
+  }, [lessonId]);
 
-  if (!lesson) {
+  const fetchLessonDetails = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await ApiService.getPublishedLessonById(lessonId);
+
+      if (response.success && response.data) {
+        setLesson(response.data);
+      } else {
+        throw new Error(response.message || 'Lesson not found');
+      }
+    } catch (error) {
+      console.error('Error fetching lesson:', error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <motion.div
+              className="w-16 h-16 border-4 border-[#FF7D29] border-t-transparent rounded-full mx-auto mb-4"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <p className="text-gray-600">Loading lesson details...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !lesson) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="container mx-auto px-4 py-20 flex-grow text-center">
+          <div className="text-6xl mb-4">😕</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">
             Lesson not found
           </h1>
           <p className="text-gray-600 mb-8">
-            The lesson you're looking for doesn't exist.
+            {error || "The lesson you're looking for doesn't exist."}
           </p>
-          <Link href="/Lessons">
+          <Link href="/lessons">
             <button className="bg-[#FF7D29] hover:bg-[#FF9D5C] text-white py-2 px-6 rounded-lg font-medium transition-colors">
               Back to Lessons
             </button>
@@ -200,6 +92,8 @@ const LessonDetail = () => {
       </div>
     );
   }
+
+  const videoId = getYouTubeVideoId(lesson.videoUrl);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -216,184 +110,159 @@ const LessonDetail = () => {
                 transition={{ duration: 0.5 }}
               >
                 <div className="text-sm text-[#FF7D29] font-medium mb-2">
-                  {lesson.category} • {lesson.level}
+                  {lesson.category} • {lesson.difficulty || 'Beginner'}
                 </div>
                 <h1 className="text-4xl font-bold mb-4 text-gray-800">
                   {lesson.title}
                 </h1>
                 <p className="text-gray-600 mb-6">{lesson.description}</p>
+                
                 <div className="flex items-center mb-6">
                   <div className="w-12 h-12 bg-gray-300 rounded-full mr-4 flex items-center justify-center text-white font-bold">
-                    {lesson.instructor.charAt(0)}
+                    {lesson.teacherName ? lesson.teacherName.charAt(0) : 'T'}
                   </div>
                   <div>
                     <div className="font-medium text-gray-800">
-                      {lesson.instructor}
+                      {lesson.teacherName || 'Instructor'}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {lesson.instructorTitle}
+                      Language Expert
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-4 mb-8">
-                  <div className="bg-gray-100 px-4 py-2 rounded-full">
-                    <span className="text-gray-700 font-medium">
+
+                <div className="flex flex-wrap gap-4 mb-6">
+                  {lesson.duration && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
                       {lesson.duration}
-                    </span>
-                  </div>
-                  <div className="bg-gray-100 px-4 py-2 rounded-full">
-                    <span className="text-gray-700 font-medium">
-                      {lesson.modules} Modules
-                    </span>
-                  </div>
+                    </div>
+                  )}
+                  {lesson.language && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-2.494 1 1 0 111.79-.89c.234.47.489.928.764 1.372.417-.934.752-1.913.997-2.927H3a1 1 0 110-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.982a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.894L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.982A1 1 0 0113 8zm-1.382 6h2.764L13 11.236 11.618 14z" clipRule="evenodd" />
+                      </svg>
+                      {lesson.language}
+                    </div>
+                  )}
+                  {lesson.views > 0 && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      👁️ {lesson.views} views
+                    </div>
+                  )}
                 </div>
-                <Link href={`/lessons/${lesson.id}/content`}>
-                  <motion.button
-                    className="bg-[#FF7D29] hover:bg-[#FF9D5C] text-white py-4 px-8 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_2px_0px_0px_rgba(0,0,0,0.3)] active:transform active:translate-y-1 transition-all"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Start Learning Now
-                  </motion.button>
-                </Link>
+
+                {lesson.tags && lesson.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {lesson.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </motion.div>
+
               <motion.div
-                className="w-full md:w-1/2 flex justify-center"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                className="w-full md:w-1/2"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <div className="relative w-full max-w-md h-72 bg-gray-200 rounded-lg overflow-hidden shadow-lg">
-                  {/* If you have actual images, uncomment this */}
-                  {/* <Image 
-                    src={lesson.image} 
-                    alt={lesson.title}
-                    fill
-                    style={{ objectFit: 'cover' }} 
-                  /> */}
-                  <div className="flex items-center justify-center h-full">
+                {videoId ? (
+                  <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden shadow-lg">
+                    <img
+                      src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                      alt="Video thumbnail"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : lesson.coverImage ? (
+                  <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden shadow-lg">
+                    <img
+                      src={lesson.coverImage}
+                      alt={lesson.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden shadow-lg flex items-center justify-center">
                     <div className="text-gray-400 text-xl">
-                      [{lesson.category} Lesson Preview]
+                      [{lesson.category} Lesson]
                     </div>
                   </div>
-                </div>
+                )}
               </motion.div>
             </div>
           </div>
         </div>
 
-        {/* What You'll Learn Section */}
-        <div className="container mx-auto px-4 py-16">
-          <motion.div
-            className="mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <h2 className="text-3xl font-bold mb-8 text-gray-800">
-              What You'll Learn
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {lesson.learningPoints.map((point, index) => (
-                <motion.div
-                  key={index}
-                  className="flex items-start"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.4 + index * 0.1 }}
-                >
-                  <div className="mr-4 mt-1 text-[#FF7D29]">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-gray-700">{point}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+        {/* Quizzes Section */}
+        {lesson.quizzes && lesson.quizzes.length > 0 && (
+          <div className="container mx-auto px-4 py-16">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <h2 className="text-3xl font-bold mb-8 text-gray-800">
+                Quiz Questions ({lesson.quizzes.length})
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Test your knowledge with {lesson.quizzes.length} interactive quiz{lesson.quizzes.length > 1 ? 'zes' : ''}.
+              </p>
+            </motion.div>
+          </div>
+        )}
 
-          {/* Course Structure */}
-          <motion.div
-            className="mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            <h2 className="text-3xl font-bold mb-8 text-gray-800">
-              Course Structure
-            </h2>
-            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-              <div className="space-y-4">
-                {[...Array(3)].map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center p-4 border-b border-gray-100 last:border-b-0"
-                  >
-                    <div className="w-8 h-8 bg-orange-100 text-[#FF7D29] rounded-full flex items-center justify-center font-bold mr-4">
-                      {index + 1}
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="font-medium text-gray-800">
-                        Module {index + 1}:{" "}
-                        {
-                          [
-                            "Introduction",
-                            "Core Concepts",
-                            "Advanced Practice",
-                          ][index]
-                        }
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        4 lessons • 45 minutes
-                      </p>
-                    </div>
-                    <div className="text-sm text-gray-400">
-                      {index === 0 ? "Free Preview" : ""}
-                    </div>
-                  </div>
-                ))}
-                <div className="pt-2 text-center text-gray-500 text-sm">
-                  And {lesson.modules - 3} more modules...
-                </div>
+        {/* Transcript Section */}
+        {lesson.transcript && (
+          <div className="container mx-auto px-4 py-16 bg-gray-50">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <h2 className="text-3xl font-bold mb-8 text-gray-800">
+                Transcript
+              </h2>
+              <div className="bg-white rounded-xl shadow-md p-6 max-w-4xl">
+                <p className="text-gray-700 whitespace-pre-line">{lesson.transcript}</p>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
+        )}
 
-          {/* Call to Action */}
-          <motion.div
-            className="text-center py-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-          >
-            <h2 className="text-3xl font-bold mb-6 text-gray-800">
-              Ready to start your {lesson.category} journey?
-            </h2>
-            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              Join thousands of students who have already improved their{" "}
-              {lesson.category} skills with our engaging, interactive lessons.
-            </p>
-            <Link href={`/lessons/${lesson.id}/content`}>
-              <motion.button
-                className="bg-[#FF7D29] hover:bg-[#FF9D5C] text-white py-4 px-10 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_2px_0px_0px_rgba(0,0,0,0.3)] active:transform active:translate-y-1 transition-all"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Start Learning Now
-              </motion.button>
-            </Link>
-          </motion.div>
-        </div>
+        {/* Call to Action */}
+        <motion.div
+          className="text-center py-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold mb-6 text-gray-800">
+            Ready to start learning?
+          </h2>
+          <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+            Join thousands of students who have already improved their language
+            skills with this engaging lesson.
+          </p>
+          <Link href={`/lessons/${lesson.id}/content`}>
+            <motion.button
+              className="bg-[#FF7D29] hover:bg-[#FF9D5C] text-white py-4 px-10 rounded-xl font-bold text-lg shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[0px_2px_0px_0px_rgba(0,0,0,0.3)] active:transform active:translate-y-1 transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Start Learning Now
+            </button>
+          </Link>
+        </motion.div>
       </div>
       <Footer />
     </div>

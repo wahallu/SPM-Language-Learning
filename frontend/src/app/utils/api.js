@@ -633,6 +633,54 @@ class ApiService {
     }
     return null;
   }
+
+  // =================== PUBLIC LESSON APIs ===================
+
+  /**
+   * Get all published lessons (public access)
+   */
+  static async getAllPublishedLessons() {
+    const response = await fetch(`${API_BASE_URL}/lessons/public/all`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Get a specific published lesson by ID (public access)
+   */
+  static async getPublishedLessonById(lessonId) {
+    const response = await fetch(`${API_BASE_URL}/lessons/public/${lessonId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return this.handleResponse(response);
+  }
+
+  /**
+   * Search published lessons with filters (public access)
+   */
+  static async searchPublishedLessons(filters = {}) {
+    const params = new URLSearchParams();
+    
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.category) params.append('category', filters.category);
+    if (filters.level) params.append('level', filters.level);
+    if (filters.language) params.append('language', filters.language);
+
+    const response = await fetch(`${API_BASE_URL}/lessons/public/search?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return this.handleResponse(response);
+  }
 }
 
 export default ApiService;

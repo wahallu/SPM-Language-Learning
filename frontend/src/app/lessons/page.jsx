@@ -1,98 +1,133 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "../Components/layout/Header";
 import Footer from "../Components/layout/Footer";
 import { motion } from "motion/react";
+import ApiService from "../utils/api";
 
 const Page = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [lessons, setLessons] = useState([]);
+  const [filteredLessons, setFilteredLessons] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedLevel, setSelectedLevel] = useState("all");
 
-  // Language learning focused lessons
-  const lessons = [
-    {
-      id: 1,
-      title: "Beginner Basics",
-      category: "English",
-      instructor: "Dr. Maria Rodriguez",
-      instructorTitle: "Language Expert",
-      image: "/images/lessons/beginner-basics.png",
-      level: "Beginner",
-    },
-    {
-      id: 2,
-      title: "Conversation Skills",
-      category: "Sinhala",
-      instructor: "Dr. Maria Rodriguez",
-      instructorTitle: "Language Expert",
-      image: "/images/lessons/conversation.png",
-      level: "Intermediate",
-    },
-    {
-      id: 3,
-      title: "Grammar Fundamentals",
-      category: "Tamil",
-      instructor: "Prof. James Chen",
-      instructorTitle: "Grammar Specialist",
-      image: "/images/lessons/grammar.png",
-      level: "Beginner",
-    },
-    {
-      id: 4,
-      title: "Pronunciation Guide",
-      category: "English",
-      instructor: "Sarah Thompson",
-      instructorTitle: "Accent Coach",
-      image: "/images/lessons/pronunciation.png",
-      level: "All Levels",
-    },
-    {
-      id: 5,
-      title: "Vocabulary Builder",
-      category: "Sinhala",
-      instructor: "Prof. James Chen",
-      instructorTitle: "Language Expert",
-      image: "/images/lessons/vocabulary.png",
-      level: "Beginner",
-    },
-    {
-      id: 6,
-      title: "Cultural Context",
-      category: "Tamil",
-      instructor: "Dr. Maria Rodriguez",
-      instructorTitle: "Cultural Specialist",
-      image: "/images/lessons/culture.png",
-      level: "Intermediate",
-    },
-    {
-      id: 7,
-      title: "Reading Comprehension",
-      category: "English",
-      instructor: "Sarah Thompson",
-      instructorTitle: "Reading Coach",
-      image: "/images/lessons/reading.png",
-      level: "Advanced",
-    },
-    {
-      id: 8,
-      title: "Writing Essentials",
-      category: "Sinhala",
-      instructor: "Prof. James Chen",
-      instructorTitle: "Writing Expert",
-      image: "/images/lessons/writing.png",
-      level: "Intermediate",
-    },
-  ];
+  // Fetch lessons on component mount
+  useEffect(() => {
+    fetchLessons();
+  }, []);
 
-  // Filter lessons based on search term
-  const filteredLessons = lessons.filter(
-    (lesson) =>
-      lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lesson.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lesson.level.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter lessons when search term or filters change
+  useEffect(() => {
+    filterLessons();
+  }, [searchTerm, selectedCategory, selectedLevel, lessons]);
+
+  const fetchLessons = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await ApiService.getAllPublishedLessons();
+
+      if (response.success && response.data) {
+        setLessons(response.data);
+        setFilteredLessons(response.data);
+      } else {
+        throw new Error(response.message || 'Failed to fetch lessons');
+      }
+    } catch (error) {
+      console.error('Error fetching lessons:', error);
+      setError(error.message);
+      setLessons([]);
+      setFilteredLessons([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filterLessons = () => {
+    let filtered = lessons;
+
+    // Search term filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (lesson) =>
+          lesson.title.toLowerCase().includes(term) ||
+          lesson.category.toLowerCase().includes(term) ||
+          lesson.level.toLowerCase().includes(term) ||
+          (lesson.description && lesson.description.toLowerCase().includes(term))
+      );
+    }
+
+    // Category filter
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(
+        (lesson) => lesson.category.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+
+    // Level filter
+    if (selectedLevel !== "all") {
+      filtered = filtered.filter(
+        (lesson) => lesson.level.toLowerCase() === selectedLevel.toLowerCase()
+      );
+    }
+
+    setFilteredLessons(filtered);
+  };
+
+  // Get unique categories and levels from lessons
+  const categories = ["all", ...new Set(lessons.map((l) => l.category))];
+  const levels = ["all", ...new Set(lessons.map((l) => l.level))];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <motion.div
+              className="w-16 h-16 border-4 border-[#FF7D29] border-t-transparent rounded-full mx-auto mb-4"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <p className="text-gray-600">Loading lessons...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center max-w-md">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Error Loading Lessons
+            </h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={fetchLessons}
+              className="bg-[#FF7D29] text-white px-6 py-2 rounded-lg hover:bg-[#FF9D5C] transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -113,14 +148,15 @@ const Page = () => {
           </p>
         </motion.div>
 
-        {/* Search bar */}
+        {/* Search and Filters */}
         <motion.div
-          className="max-w-md mx-auto mb-12"
+          className="max-w-4xl mx-auto mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="relative">
+          {/* Search bar */}
+          <div className="relative mb-4">
             <input
               type="text"
               placeholder="Search by language, title, or level..."
@@ -145,9 +181,47 @@ const Page = () => {
               </svg>
             </div>
           </div>
+
+          {/* Filter dropdowns */}
+          <div className="flex gap-4 flex-wrap">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7D29]"
+            >
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category === "all" ? "All Categories" : category}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedLevel}
+              onChange={(e) => setSelectedLevel(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7D29]"
+            >
+              {levels.map((level) => (
+                <option key={level} value={level}>
+                  {level === "all" ? "All Levels" : level}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCategory("all");
+                setSelectedLevel("all");
+              }}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
         </motion.div>
 
-        {/* Free lesson banner */}
+        {/* Stats */}
         <motion.div
           className="bg-green-100 rounded-lg p-6 mb-10 text-center shadow-sm"
           initial={{ opacity: 0, scale: 0.95 }}
@@ -165,7 +239,7 @@ const Page = () => {
             />
             <div className="text-left">
               <h3 className="text-xl font-bold text-green-800 mb-1">
-                Start Your Language Journey Today!
+                {lessons.length} Lessons Available!
               </h3>
               <p className="text-green-700">
                 All lessons are free to learn with our innovative approach to
@@ -186,16 +260,23 @@ const Page = () => {
               transition={{ duration: 0.3, delay: index * 0.05 }}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
             >
-              {/* Image placeholder */}
+              {/* Image */}
               <div className="h-48 bg-gray-200 relative">
-                {/* If you have actual images, uncomment this */}
-                {/* <Image 
-                  src={lesson.image} 
-                  alt={lesson.title}
-                  fill
-                  style={{ objectFit: 'cover' }} 
-                /> */}
-                <div className="flex items-center justify-center h-full">
+                {lesson.coverImage || lesson.videoThumbnail ? (
+                  <img
+                    src={lesson.coverImage || lesson.videoThumbnail}
+                    alt={lesson.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className="flex items-center justify-center h-full"
+                  style={{ display: lesson.coverImage || lesson.videoThumbnail ? 'none' : 'flex' }}
+                >
                   <div className="text-gray-400">
                     [{lesson.category} Lesson]
                   </div>
@@ -203,20 +284,48 @@ const Page = () => {
                 <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-xs font-medium text-gray-700">
                   {lesson.level}
                 </div>
+                {lesson.views > 0 && (
+                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs">
+                    👁️ {lesson.views} views
+                  </div>
+                )}
               </div>
+
               <div className="p-5">
                 <div className="text-sm text-[#FF7D29] font-medium mb-1">
                   {lesson.category}
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-gray-800">
+                <h3 className="font-bold text-lg mb-2 text-gray-800 line-clamp-2">
                   {lesson.title}
                 </h3>
 
-                <div className="flex items-center mt-4 pt-3 border-t border-gray-100">
+                {lesson.description && (
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    {lesson.description}
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between mb-3">
+                  {lesson.duration && (
+                    <div className="text-xs text-gray-500 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                      {lesson.duration}
+                    </div>
+                  )}
+                  {lesson.averageRating > 0 && (
+                    <div className="text-xs text-gray-500 flex items-center">
+                      ⭐ {lesson.averageRating.toFixed(1)} ({lesson.totalRatings})
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center pt-3 border-t border-gray-100">
                   <div className="w-10 h-10 bg-gray-300 rounded-full mr-3 flex items-center justify-center text-white font-bold">
                     {lesson.instructor.charAt(0)}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <div className="font-medium text-sm text-gray-800">
                       {lesson.instructor}
                     </div>
@@ -235,17 +344,26 @@ const Page = () => {
           ))}
         </div>
 
-        {filteredLessons.length === 0 && (
+        {filteredLessons.length === 0 && !isLoading && (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">
-              No lessons found matching "{searchTerm}"
+            <div className="text-6xl mb-4">🔍</div>
+            <p className="text-gray-600 text-lg mb-2">
+              {searchTerm || selectedCategory !== "all" || selectedLevel !== "all"
+                ? `No lessons found matching your filters`
+                : `No lessons available yet`}
             </p>
-            <button
-              onClick={() => setSearchTerm("")}
-              className="mt-4 text-[#FF7D29] hover:text-[#FF9D5C]"
-            >
-              Clear search
-            </button>
+            {(searchTerm || selectedCategory !== "all" || selectedLevel !== "all") && (
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedCategory("all");
+                  setSelectedLevel("all");
+                }}
+                className="mt-4 text-[#FF7D29] hover:text-[#FF9D5C] font-medium"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
         )}
       </div>

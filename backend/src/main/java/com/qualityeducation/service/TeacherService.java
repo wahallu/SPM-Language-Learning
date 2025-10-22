@@ -2,6 +2,7 @@ package com.qualityeducation.service;
 
 import com.qualityeducation.dto.*;
 import com.qualityeducation.model.*;
+import com.qualityeducation.model.Module;
 import com.qualityeducation.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

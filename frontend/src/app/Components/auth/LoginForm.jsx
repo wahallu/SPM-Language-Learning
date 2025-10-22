@@ -73,19 +73,59 @@ const LoginForm = ({ onForgotPassword }) => {
         }),
       });
       
-      const data = await response.json();
+      const result = await response.json();
+      
+      console.log('Login response:', result);
       
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(result.message || 'Login failed');
       }
       
-      // Store auth token in localStorage or cookies
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userId', data.userId);
-      localStorage.setItem('username', data.username);
+      // Check if login was successful
+      if (!result.success) {
+        throw new Error(result.message || 'Login failed');
+      }
+
+      // Validate we have the required token
+      if (!result.token) {
+        console.error('No token found in response:', result);
+        throw new Error('No authentication token received');
+      }
+
+      console.log('Token found, storing authentication data...');
+
+      // Store auth data in localStorage - token and data are at root level
+      localStorage.setItem('authToken', result.token);
+      localStorage.setItem('userId', result.userId);
+      localStorage.setItem('username', result.username);
+      localStorage.setItem('userEmail', formData.email); // Use form email since it's not in response
+      localStorage.setItem('userRole', result.role);
+
+      console.log('Login successful, stored data:', {
+        token: result.token.substring(0, 20) + '...',
+        userId: result.userId,
+        username: result.username,
+        email: formData.email,
+        role: result.role
+      });
+
+      // Show success message
+      alert('Login successful!');
       
-      // Redirect based on user role (you might need to implement role-based logic)
-      router.push('/lessons');
+      // Redirect based on user role
+      const role = result.role.toUpperCase();
+      console.log('Redirecting user with role:', role);
+    
+      if (role === 'TEACHER') {
+        router.push('/teacher');
+      } else if (role === 'SUPERVISOR') {
+        router.push('/supervisor');
+      } else if (role === 'STUDENT') {
+        router.push('/student');
+      } else {
+        // Default to student for unknown roles
+        router.push('/student');
+      }
       
     } catch (error) {
       console.error('Login failed:', error);
@@ -97,7 +137,8 @@ const LoginForm = ({ onForgotPassword }) => {
 
   const handleSocialLogin = (provider) => {
     console.log(`Login with ${provider}`);
-    // Implement social login logic
+    alert(`${provider} login is not yet implemented`);
+    // TODO: Implement social login logic
   };
 
   return (
@@ -147,7 +188,7 @@ const LoginForm = ({ onForgotPassword }) => {
         {/* Social Login Buttons */}
         <div className="space-y-3 mb-6">
           <motion.button
-            onClick={() => handleSocialLogin('google')}
+            onClick={() => handleSocialLogin('Google')}
             className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -162,7 +203,7 @@ const LoginForm = ({ onForgotPassword }) => {
           </motion.button>
 
           <motion.button
-            onClick={() => handleSocialLogin('facebook')}
+            onClick={() => handleSocialLogin('Facebook')}
             className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -192,7 +233,12 @@ const LoginForm = ({ onForgotPassword }) => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {errors.submit}
+              <div className="flex items-start">
+                <svg className="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span>{errors.submit}</span>
+              </div>
             </motion.div>
           )}
 
